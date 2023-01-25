@@ -12,6 +12,7 @@ import {TestService} from "./api/test/test.service";
 import {UserService} from "./api/user/user.service";
 
 const { db } = require('./prisma/client')
+const logger = require('pino')()
 
 const main = async () => {
     dotenv.config();
@@ -35,10 +36,33 @@ const main = async () => {
     const server = new ApolloServer({
         schema,
         plugins: [ ApolloServerPluginLandingPageGraphQLPlayground ],
+        formatError: (err) => {
+            const flag20 = err.message.startsWith('[20]');
+            let code = '';
+
+            if(!flag20){
+                code = (() => {
+                    let n = (Math.random() * 0xfffff * 1000000).toString(16);
+                    return '0x' + n.slice(0, 8);
+                })();
+
+                logger.error({...err, _CODE: code});
+            }
+
+            if(process.env.ENV !== 'PROD')
+                return err;
+
+            if(flag20)
+                return {
+                    message: err.message.replace('[20]', ''),
+                }
+
+            return { message: `internal error (${code})`}
+        }
     });
 
     const app = Express();
-    const PORT = process.env.PORT;
+    const PORT = Number(process.env.PORT);
 
     await server.start();
 
@@ -46,12 +70,12 @@ const main = async () => {
     server.applyMiddleware({ app });
 
     app.listen({ port: PORT }, () =>
-        console.log(
-            `🚀 Server ready and listening at http://localhost:${PORT}${server.graphqlPath}`
+        logger.info(
+            `Server ready and listening at http://localhost:${PORT}${server.graphqlPath}`
         )
     );
 };
 
 main().catch((error) => {
-    console.log(error, 'error');
+    logger.error(error, 'error');
 });

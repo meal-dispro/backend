@@ -4,14 +4,15 @@ import {
     Arg,
     Query,
 } from 'type-graphql';
-import { User } from './user.entity';
-import { UserInput } from './user.input';
+import {LoginUser, User} from './user.entity';
+import {LoginInput, SignupInput} from './signupInput';
 import {Service} from "typedi";
+import {UserService} from "./user.service";
 
 @Service()
 @Resolver((_of) => User)
 export class UserResolver {
-    private readonly userService
+    private readonly userService: UserService
 
     constructor(
         private readonly _: any,
@@ -25,13 +26,20 @@ export class UserResolver {
         return this.userService.getUser(id);
     }
 
-    @Mutation(() => User)
-    createUser(
-        @Arg('data', ()=>UserInput)
-            { username, email }: UserInput
-    ): User {
-//TODO
-        return {id: -1, username, email};
+    @Query(() => LoginUser)
+    async login(
+        @Arg('data', ()=>LoginInput)
+            { email, password }: SignupInput
+    ): Promise<LoginUser> {
+        return this.userService.login(email, password);
+    }
+
+    @Mutation(() => LoginUser)
+    async signup(
+        @Arg('data', ()=>SignupInput)
+            { username, email, password }: SignupInput
+    ): Promise<LoginUser> {
+        return this.userService.signup(username, email, password);
     }
 
 }

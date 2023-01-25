@@ -13,3 +13,18 @@ export class User {
         // @Property({ required: true })
     email!: String;
 }
+
+@ObjectType({description: 'The User model'})
+export class LoginUser {
+    @Field(() => ID)
+    id!: number;
+
+    @Field(() => User)
+    user!: User;
+
+    @Field(() => String)
+    JWT?: String;
+
+    @Field(() => String)
+    RJWT?: String;
+}
