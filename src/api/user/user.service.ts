@@ -29,7 +29,7 @@ export class UserService {
         let user: User;
 
         try {
-            user = await this.db.user.create({data: {username, email, password: safepwd}})
+            user = await this.db.user.create({data: {username, email, password: safepwd, Auth:{create: {rjwt: "_"}}}})
         } catch (e) {
             // P2022: Unique constraint failed
             // Prisma error codes: https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
@@ -42,14 +42,18 @@ export class UserService {
 
         const id = user.id;
 
-        const data = {};
+        const data = {perm:0};
 
-        const {JWT, RJWT} = this.genToken(id, data);
+        const {JWT, RJWT} = await this.genToken(id, data);
 
         return {user, id, JWT, RJWT};
     }
 
-    genToken(id: number, data: { [key: string]: unknown }): { JWT: string, RJWT: string } {
+    async refreshToken(id: number, ref: unknown){
+        //TODO: SETUP REFRESH ENDPOINT
+    }
+
+    async genToken(id: number, data: { [key: string]: unknown }): Promise<{ JWT: string, RJWT: string }> {
         //TODO: Generate/configure NOT HARD CODED
         const secret = "12345";
         const jwtExp = 15 * 60;
@@ -71,7 +75,8 @@ export class UserService {
         //https://stackoverflow.com/questions/72366762/security-and-best-practices-for-auth-w-refresh-access-tokens
         //https://security.stackexchange.com/questions/119371/is-refreshing-an-expired-jwt-token-a-good-strategy
         const RJWT = jwt.encode(refresh, secret);
-        //TODO: SAVE RJWT TO DB, SETUP RJWT ENDPOINT
+
+        await this.db.auth.update({where: {id}, data: {rjwt: RJWT}});
 
         return {JWT, RJWT};
     }
@@ -94,7 +99,7 @@ export class UserService {
         const data = {};
         const id = user.id;
 
-        const {JWT, RJWT} = this.genToken(id, data);
+        const {JWT, RJWT} = await this.genToken(id, data);
 
         return {user: user as User, id, JWT, RJWT};
     }

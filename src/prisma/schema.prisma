@@ -10,10 +10,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
-  username  String  @unique
-  password  String
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  username String @unique
+  password String
+  Auth     Auth[]
+}
+
+model Auth {
+  id   Int    @id
+  user User   @relation(fields: [id], references: [id])
+  rjwt String
 }
