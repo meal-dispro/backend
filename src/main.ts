@@ -10,6 +10,8 @@ import {TestResolver} from "./api/test/test.resolver";
 import {Container} from "typedi";
 import {TestService} from "./api/test/test.service";
 import {UserService} from "./api/user/user.service";
+import {formatError} from "./midware/GenericError";
+import {createContext} from "./midware/context";
 
 const { db } = require('./prisma/client')
 const logger = require('pino')()
@@ -36,29 +38,8 @@ const main = async () => {
     const server = new ApolloServer({
         schema,
         plugins: [ ApolloServerPluginLandingPageGraphQLPlayground ],
-        formatError: (err) => {
-            const flag20 = err.message.startsWith('[20]');
-            let code = '';
-
-            if(!flag20){
-                code = (() => {
-                    let n = (Math.random() * 0xfffff * 1000000).toString(16);
-                    return '0x' + n.slice(0, 8);
-                })();
-
-                logger.error({...err, _CODE: code});
-            }
-
-            if(process.env.ENV !== 'PROD')
-                return err;
-
-            if(flag20)
-                return {
-                    message: err.message.replace('[20]', ''),
-                }
-
-            return { message: `internal error (${code})`}
-        }
+        formatError: formatError,
+        context: createContext,
     });
 
     const app = Express();
