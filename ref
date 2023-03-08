@@ -12,3 +12,8 @@ middle https://typegraphql.com/docs/middlewares.html
 
 db https://www.tomray.dev/setup-and-deploy-graphql-server
 
+
+
+https://neo4j.com/docs/cypher-manual/current/clauses/where/
+FOR INGREDIENTS MATCHING
+MATCH(n: Ingredient) WHERE n.name STARTS WITH "p" RETURN (n);

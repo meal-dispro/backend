@@ -36,17 +36,17 @@ export class UserResolver {
     @Mutation(() => LoginUser)
     async login(
         @Arg('data', ()=>LoginInput)
-            { email, password }: SignupInput
+            { email }: SignupInput
     ): Promise<LoginUser> {
-        return this.userService.login(email, password);
+        return this.userService.login(email);
     }
 
     @Mutation(() => LoginUser)
     async signup(
         @Arg('data', ()=>SignupInput)
-            { username, email, password }: SignupInput
+            { username, email }: SignupInput
     ): Promise<LoginUser> {
-        return this.userService.signup(username, email, password);
+        return this.userService.signup(username, email);
     }
 
 }

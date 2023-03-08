@@ -21,10 +21,4 @@ export class LoginUser {
 
     @Field(() => User)
     user!: User;
-
-    @Field(() => String)
-    JWT?: String;
-
-    @Field(() => String)
-    RJWT?: String;
 }

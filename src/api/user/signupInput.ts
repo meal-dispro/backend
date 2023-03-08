@@ -9,20 +9,12 @@ export class SignupInput implements Partial<User> {
     username!: string;
 
     @Field(()=>String)
-    @Length(6, 32)
-    password!: string;
-
-    @Field(()=>String)
     @IsEmail()
     email!: string;
 }
 
 @InputType()
 export class LoginInput implements Partial<User> {
-    @Field(()=>String)
-    @Length(6, 32)
-    password!: string;
-
     @Field(()=>String)
     @IsEmail()
     email!: string;

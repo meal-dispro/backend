@@ -22,14 +22,14 @@ export class UserService {
         });
     };
 
-    async signup(username: string, email: string, password: string): Promise<LoginUser> {
-        const saltyBitch = await bcrypt.genSalt(Number(process.env.SALTY));
-
-        const safepwd = await bcrypt.hash(password, saltyBitch);
+    async signup(username: string, email: string): Promise<LoginUser> {
+        // const saltyBitch = await bcrypt.genSalt(Number(process.env.SALTY));
+        //
+        // const safepwd = await bcrypt.hash(password, saltyBitch);
         let user: User;
 
         try {
-            user = await this.db.user.create({data: {username, email, password: safepwd, Auth:{create: {rjwt: "_"}}}})
+            user = await this.db.user.create({data: {username, email}})
         } catch (e) {
             // P2022: Unique constraint failed
             // Prisma error codes: https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
@@ -42,11 +42,11 @@ export class UserService {
 
         const id = user.id;
 
-        const data = {perm:0};
+        // const data = {perm:0};
+        //
+        // const {JWT, RJWT} = await this.genToken(id, data);
 
-        const {JWT, RJWT} = await this.genToken(id, data);
-
-        return {user, id, JWT, RJWT};
+        return {user, id}//, JWT, RJWT};
     }
 
     async refreshToken(id: number, ref: unknown){
@@ -90,26 +90,26 @@ export class UserService {
         return {JWT, RJWT};
     }
 
-    async login(email: string, password: string): Promise<LoginUser> {
+    async login(email: string): Promise<LoginUser> {
         const user = await this.db.user.findUnique({
             where: {
                 email,
             },
         });
 
-        const correct = user["password"];
-        const allowAuth = await bcrypt.compare(password, correct);
+        // const correct = user["password"];
+        const allowAuth = true;//await bcrypt.compare(password, correct);
 
         if (!allowAuth)
             throw new GenericError("Invalid password")
 
         //TODO: lastlogin?
 
-        const data = {};
+        // const data = {};
         const id = user.id;
 
-        const {JWT, RJWT} = await this.genToken(id, data);
+        // const {JWT, RJWT} = await this.genToken(id, data);
 
-        return {user: user as User, id, JWT, RJWT};
+        return {user: user as User, id}//, JWT, RJWT};
     }
 }
