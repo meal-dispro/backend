@@ -15,6 +15,8 @@ import {Context, createContext} from "./midware/context";
 import {Driver} from "neo4j-driver";
 import {RecipeService} from "./api/recipes/recipe.service";
 import {RecipeResolver} from "./api/recipes/recipe.resolver";
+import {MealplanResolver} from "./api/mealplan/mealplan.resolver";
+import {MealPlanService} from "./api/mealplan/mealplan.service";
 
 const neo4j = require('neo4j-driver')
 
@@ -30,12 +32,14 @@ const main = async () => {
     Container.set({ id: "testService", value: TestService });
     Container.set({ id: "userService", value: UserService });
     Container.set({ id: "recipeService", value: RecipeService });
+    Container.set({ id: "mealPlanService", value: MealPlanService });
 
     const schema = await buildSchema({
         resolvers: [
             UserResolver,
             RecipeResolver,
             TestResolver,
+            MealplanResolver,
         ],
         container: Container,
         emitSchemaFile: true,

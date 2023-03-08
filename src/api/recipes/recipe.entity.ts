@@ -14,8 +14,14 @@ export class Recipe {
     @Field(() => String)
     link!: string;
 
+    @Field(() => String)
+    icon!: string;
+
     @Field(() => Number)
     author!: number;
+
+    @Field(() => Boolean)
+    vegan!: boolean;
 
     @Field(() => Number)
     cooktime!: number;

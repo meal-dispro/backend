@@ -21,6 +21,11 @@ export class RecipeInput implements Partial<Recipe> {
     link!: string;
 
     @Field(()=>String)
+    @Length(2, 128)
+    @IsUrl()
+    icon!: string;
+
+    @Field(()=>String)
     @Length(0, 1024)
     description!: string;
 
@@ -32,6 +37,9 @@ export class RecipeInput implements Partial<Recipe> {
     @Min(1)
     @Max(60 * 24)
     cooktime!: number;
+
+    @Field(()=>Boolean)
+    vegan!: boolean;
 
     @Field(()=>[IngredientInput])
     ingredients!: [IngredientInput];

@@ -81,6 +81,8 @@ export class RecipeService {
                 tags: recipeInput.tags,
                 title: recipeInput.title,
                 link: recipeInput.link,
+                icon: recipeInput.icon,
+                vegan: recipeInput.vegan,
                 description: recipeInput.description,
                 cooktime: recipeInput.cooktime,
                 author: payload.sub
@@ -95,7 +97,7 @@ export class RecipeService {
             }
 
             const result = await neo.run(
-                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, link: $link, description: $description, cooktime: $cooktime, author: $author}) ${mergeIngredients} RETURN r${ins}`,
+                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, link: $link, description: $description, cooktime: $cooktime, vegan: $vegan, author: $author}) ${mergeIngredients} RETURN r${ins}`,
                 params
             )
 

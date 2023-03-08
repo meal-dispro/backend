@@ -17,3 +17,8 @@ db https://www.tomray.dev/setup-and-deploy-graphql-server
 https://neo4j.com/docs/cypher-manual/current/clauses/where/
 FOR INGREDIENTS MATCHING
 MATCH(n: Ingredient) WHERE n.name STARTS WITH "p" RETURN (n);
+
+
+
+get meal plan, recipes, list and ingredients
+match (r:Recipe)<-[h:has]-(pl: MealPlan)<-[b:belongsTo]-(l: List)-[c:contains]->(i: Ingredient) return r,h,pl,b,l,c,i
