@@ -14,7 +14,7 @@ const logger = require('pino')()
 // const { ApolloServer, gql, AuthenticationError } = require('apollo-server');
 
 export const isAuth: MiddlewareFn<Context> = ({ context }, next) => {
-    const secret = "12345";
+    const secret = "12345";//TODO not hardcode
     const authorization = context.request.req.headers["authorization"];
 
     if (!authorization) {
@@ -28,6 +28,7 @@ export const isAuth: MiddlewareFn<Context> = ({ context }, next) => {
     } catch (err) {
         logger.error(err);
         throw new GenericError("Invalid authentication token: TODO attempt to refresh");
+        //https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/
     }
     return next();
 };

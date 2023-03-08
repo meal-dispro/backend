@@ -53,6 +53,8 @@ export class UserService {
         //TODO: SETUP REFRESH ENDPOINT
     }
 
+
+    //TODO: look into existing services (oauth, fb, goog, AWS Cognito etc)
     async genToken(id: number, data: { [key: string]: unknown }): Promise<{ JWT: string, RJWT: string }> {
         //TODO: Generate/configure NOT HARD CODED
         const secret = "12345";
@@ -64,8 +66,15 @@ export class UserService {
 
         const JWT = jwt.encode(data, secret);
 
+        //generate a random hex code as a string (10 digits)
+        const fam = ((c) => {
+            const n = (Math.random() * 0xfffff * 1000000).toString(16);
+            return "0x" + n.slice(0, c);
+        })(10);
+
         const refresh = {
             sub: id,
+            fam,
             exp: Date.now() / 1000 + refExp,
         };
 
@@ -76,7 +85,7 @@ export class UserService {
         //https://security.stackexchange.com/questions/119371/is-refreshing-an-expired-jwt-token-a-good-strategy
         const RJWT = jwt.encode(refresh, secret);
 
-        await this.db.auth.update({where: {id}, data: {rjwt: RJWT}});
+        await this.db.auth.update({where: {id, fam}, data: {rjwt: RJWT}});
 
         return {JWT, RJWT};
     }

@@ -20,6 +20,7 @@ model User {
 
 model Auth {
   id   Int    @id
+  fam  String @id
   user User   @relation(fields: [id], references: [id])
   rjwt String
 }
