@@ -20,8 +20,8 @@ export class RecipeService {
     async deleteRecipe(neo: Session, payload: { [p: string]: unknown }, id: string): Promise<boolean> {
         try {
             const result = await neo.run(
-                `match (n:Recipe {id: $id}) detach delete n`,
-                {id}
+                `match (n:Recipe {id: $id, author: $auth}) detach delete n`,
+                {id, auth: payload.sub}
             )
             return true;
         } catch (e) {
@@ -39,6 +39,9 @@ export class RecipeService {
                 `MATCH(r:Recipe {id:$id})-[u:uses]-(i:Ingredient) return r,i,u`,
                 {id}
             )
+
+            if(result.records.length === 0)
+                throw new GenericError('Recipe does not exist');
 
             const singleRecord = result.records[0]
             const node = singleRecord.get(0).properties;

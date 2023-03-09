@@ -8,6 +8,11 @@ const logger = require('pino')()
 @Service()
 export class MealPlanService {
 
+    async getMealPlan(neo: Session, payload: { [p: string]: unknown }, id:string): Promise<MealPlan>{
+        //match (r:Recipe)<-[h:has]-(pl: MealPlan)<-[b:belongsTo]-(l: List)-[c:contains]->(i: Ingredient) return r,h,pl,b,l,c,i
+        throw new Error('ree2');
+    }
+
     //TODO: template: must be implemented
     async createPlan(neo: Session, payload: { [p: string]: unknown }, data = undefined): Promise<MealPlan> {
 
@@ -54,7 +59,7 @@ export class MealPlanService {
                 }
             }
 
-            query += "MERGE (pl)-[:has]->(_r:Recipe)-[u:uses]->(i:Ingredient) return _r,u,i";
+            query += "MERGE (pl)-[:has]->(:Recipe)-[u:uses]->(i:Ingredient) return u,i";
 
             /**
              CREATE (pl:MealPlan {date: 1601723642000})
@@ -79,8 +84,8 @@ export class MealPlanService {
             //total up the final quantities
             for(let i = 0; i < result.records.length; i++){
                 const dat = result.records[i];
-                const qty = dat.get(1).properties.qty;
-                const name = dat.get(2).properties.name;
+                const qty = dat.get(0).properties.qty;
+                const name = dat.get(1).properties.name;
 
                 if(listData[name])
                     listData[name] += qty
@@ -91,7 +96,7 @@ export class MealPlanService {
             //TODO: look into refactoring with commans i think its more efficient
             const listParams: {[key: string]: unknown} = {plId: ID}
             let listMatchQuery = "MATCH (pl: MealPlan {id: $plId}), "
-            let listCreateQuery = "CREATE (l: List), (l)-[:belongsTo]->(pl), ";
+            let listCreateQuery = "CREATE (l: List {id: $plId}), (l)-[:belongsTo]->(pl), ";
             for(let i = 0; i < Object.keys(listData).length; i++){
                 const name = Object.keys(listData)[i];
                 listMatchQuery += ` (i${i}:Ingredient {name:$name${i}}),`

@@ -54,5 +54,4 @@ export class IngredientInput {
     @Field(()=>Number)
     @Min(1)
     qty!: number;
-
 }

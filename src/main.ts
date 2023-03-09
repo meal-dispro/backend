@@ -17,6 +17,8 @@ import {RecipeService} from "./api/recipes/recipe.service";
 import {RecipeResolver} from "./api/recipes/recipe.resolver";
 import {MealplanResolver} from "./api/mealplan/mealplan.resolver";
 import {MealPlanService} from "./api/mealplan/mealplan.service";
+import {ListService} from "./api/list/list.service";
+import {ListResolver} from "./api/list/list.resolver";
 
 const neo4j = require('neo4j-driver')
 
@@ -33,6 +35,7 @@ const main = async () => {
     Container.set({ id: "userService", value: UserService });
     Container.set({ id: "recipeService", value: RecipeService });
     Container.set({ id: "mealPlanService", value: MealPlanService });
+    Container.set({ id: "listService", value: ListService });
 
     const schema = await buildSchema({
         resolvers: [
@@ -40,6 +43,7 @@ const main = async () => {
             RecipeResolver,
             TestResolver,
             MealplanResolver,
+            ListResolver,
         ],
         container: Container,
         emitSchemaFile: true,
