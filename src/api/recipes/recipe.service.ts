@@ -64,6 +64,9 @@ export class RecipeService {
     }
 
     async createRecipe(neo: Session, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
+        if(!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
+            throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
+
         /**
          CREATE (r:Recipe {title:'new2'})
          MERGE (i:Ingredient {name: 'passata'})
@@ -85,9 +88,13 @@ export class RecipeService {
                 title: recipeInput.title,
                 link: recipeInput.link,
                 icon: recipeInput.icon,
+                type: recipeInput.type,
                 vegan: recipeInput.vegan,
+                vegetarian: recipeInput.vegetarian,
                 description: recipeInput.description,
                 cooktime: recipeInput.cooktime,
+                cost: recipeInput.cost,
+                serves: recipeInput.serves,
                 author: payload.sub
             };
             let ins = '';
@@ -100,7 +107,7 @@ export class RecipeService {
             }
 
             const result = await neo.run(
-                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, link: $link, description: $description, cooktime: $cooktime, vegan: $vegan, author: $author}) ${mergeIngredients} RETURN r${ins}`,
+                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) ${mergeIngredients} RETURN r${ins}`,
                 params
             )
 

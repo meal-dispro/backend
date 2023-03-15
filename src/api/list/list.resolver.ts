@@ -2,7 +2,7 @@ import {
     Resolver,
     Mutation,
     Arg,
-    UseMiddleware, Ctx,
+    UseMiddleware, Ctx, Query,
 } from 'type-graphql';
 import {Service} from "typedi";
 import {ListService} from "./list.service";
@@ -24,7 +24,7 @@ export class ListResolver {
         this.listService = new (this._.services.find((a: any) => a.id === 'listService').value)(this._);
     }
 
-    @Mutation(() => List)
+    @Query(() => List)
     @UseMiddleware(isAuth, neoSess)
     async getList(@Ctx() { payload, neo }: Context, @Arg('data', ()=>GetList) data: GetList): Promise<List>{
         if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")

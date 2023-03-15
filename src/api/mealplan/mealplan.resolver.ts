@@ -11,6 +11,7 @@ import {Context} from "../../midware/context";
 import {neoSess} from "../../midware/neoSess";
 import {MealPlan} from "./mealplan.entity";
 import {GenericError} from "../../midware/GenericError";
+import {MealplanInput} from "./mealplanInput";
 
 @Service()
 @Resolver((_of) => MealPlan)
@@ -25,8 +26,8 @@ export class MealplanResolver {
 
     @Mutation(() => MealPlan)
     @UseMiddleware(isAuth, neoSess)
-    async createMealPlan(@Ctx() { payload, neo }: Context): Promise<MealPlan>{
+    async createMealPlan(@Ctx() { payload, neo }: Context, @Arg('data', ()=>MealplanInput) mealplanInput: MealplanInput): Promise<MealPlan>{
         if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
-        return await this.mealPlanService.createPlan(neo, payload);
+        return await this.mealPlanService.createPlan(neo, payload, mealplanInput);
     }
 }

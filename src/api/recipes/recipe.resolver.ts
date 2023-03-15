@@ -38,7 +38,7 @@ export class RecipeResolver {
         return await this.recipeService.deleteRecipe(neo, payload, recipeInput.id);
     }
 
-    @Mutation(() => Recipe)
+    @Query(() => Recipe)
     @UseMiddleware(isAuth, neoSess)
     async getRecipe(@Ctx() { payload, neo }: Context, @Arg('data', ()=>RecipeById) recipeInput: RecipeById): Promise<Recipe> {
         if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
