@@ -12,6 +12,7 @@ import {neoSess} from "../../midware/neoSess";
 import {MealPlan} from "./mealplan.entity";
 import {GenericError} from "../../midware/GenericError";
 import {MealplanInput} from "./mealplanInput";
+import {GraphQLScalarType} from "graphql";
 
 @Service()
 @Resolver((_of) => MealPlan)

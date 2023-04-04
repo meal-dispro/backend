@@ -36,9 +36,11 @@ export class MealPlanService {
 
         //TOPSIS: updates data.tags weights, not database tag count weight
 
-        const recipeModifier: {type:string, vegan?:boolean} = {type: "lunch"}
-        if(true) //if vegan, else do nothing because (not vegan == vegan || not vegan)
+        const recipeModifier: {type:string, vegan?:boolean, vegetarian?: boolean} = {type: "lunch"}
+        if(thisIsNotAVariableItsJustMePuttingAllTheDataInOnePlace.vegan) //if vegan, else do nothing because (not vegan == vegan || not vegan)
             recipeModifier['vegan'] = true;
+        if(thisIsNotAVariableItsJustMePuttingAllTheDataInOnePlace.vegetarian) //if vegetarian
+            recipeModifier['vegetarian'] = true;
 
         //TODO: data filter layer
         // allergy requirements, as well as other diet filters. It will also filter out meals way out of the price range and (average cooking time)?
@@ -66,6 +68,7 @@ export class MealPlanService {
 
 
         //TODO: TOPSIS ALGORITHM LAYER
+        //https://www.youtube.com/watch?v=Br1NQK0Iumg
 
         //output: the decided mealplan in the format:
         /*+

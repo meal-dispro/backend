@@ -22,3 +22,26 @@ MATCH(n: Ingredient) WHERE n.name STARTS WITH "p" RETURN (n);
 
 get meal plan, recipes, list and ingredients
 match (r:Recipe)<-[h:has]-(pl: MealPlan)<-[b:belongsTo]-(l: List)-[c:contains]->(i: Ingredient) return r,h,pl,b,l,c,i
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://copyprogramming.com/howto/graphql-custom-scalar-validation
+https://egghead.io/lessons/apollo-define-a-custom-scalar-type-for-a-graphql-api
+https://the-guild.dev/graphql/tools/docs/schema-loading
+https://www.apollographql.com/docs/apollo-server/schema/custom-scalars/
