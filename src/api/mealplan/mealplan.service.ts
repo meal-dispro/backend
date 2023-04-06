@@ -19,7 +19,7 @@ export class MealPlanService {
     async createPlan(neo: Session, payload: { [p: string]: unknown }): Promise<MealPlan> {
         const data: MealplanInput = {
             days: 7,
-            meals: ['br','lu','lu','di','sn'],
+            meals: ['br','lu','di','sn'],
             restrictedAlergies: ['celary', 'mustard', 'gluten'],
             vegan: false,
             vegetarian: false,

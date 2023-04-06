@@ -111,9 +111,6 @@ export class TheAlgorithm {
             // limit: 35
         }
 
-        //TODO: remove
-        queryData.cost = 9000
-
         //add static match options
         if (this.data.vegan) {//if vegan, else do nothing because (not vegan == vegan || not vegan)
             queryString += ', vegan: $vegan'
