@@ -46,6 +46,8 @@ export class MealPlanService {
             })();
             console.log(ID)
 
+            let notEnoughMealsFlag = false;
+
             //building the meal plan query.
             let query = "CREATE (pl:MealPlan {stamp: $stamp, id: $plId}) ";
             const params: {[key: string]: unknown} = {stamp: new Date().getTime(), plId: ID}
@@ -54,6 +56,10 @@ export class MealPlanService {
             //take in nested array of IDs, merge recipe x with plan pl, has day and meal number stored
             for(let day = 0; day < mealplan.length; day++){
                 for(let meal = 0; meal < mealplan[day].length; meal++){
+                    if(mealplan[day][meal] === "error"){
+                        notEnoughMealsFlag = true;
+                        continue;
+                    }
                     const x = `${day}${meal}`;
                     query += `MERGE (r${x}:Recipe {id: $rId${x}}) MERGE (pl)-[:has {day:${day}, meal:${meal}}]->(r${x}) `;
                     params["rId"+x] = mealplan[day][meal];
@@ -117,8 +123,9 @@ export class MealPlanService {
             )
 
             //TODO something here
+            //TODO return flag
 
-            throw new GenericError("ree")
+            throw new GenericError(`flag: ${notEnoughMealsFlag}`)
         } catch (e) {
             logger.error(e);
             throw new GenericError("An error occurred while creating a meal plan.");

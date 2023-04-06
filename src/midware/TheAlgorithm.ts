@@ -65,8 +65,11 @@ export class TheAlgorithm {
 
         //add a meal to each day of the plan
         const addMeal = (plan: string[], m: number) => {
-            for (let d = 0; d < this.data.days; d++)
-                mealplan[d][m] = plan.pop() ?? "error";
+            for (let d = 0; d < this.data.days; d++){
+                const val = plan.shift() ?? "error";
+                plan.push(val);//cycle meals to provide meals if low results
+                mealplan[d][m] = val;
+            }
         }
 
         //max 35 iterations, add each meal to plan
