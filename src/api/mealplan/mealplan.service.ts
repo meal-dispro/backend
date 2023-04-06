@@ -44,7 +44,7 @@ export class MealPlanService {
                 let n = (Math.random() * 0xfffff * 1000000).toString(16);
                 return n.slice(0, 9);
             })();
-
+            console.log(ID)
 
             //building the meal plan query.
             let query = "CREATE (pl:MealPlan {stamp: $stamp, id: $plId}) ";

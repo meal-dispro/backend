@@ -21,7 +21,7 @@ export class MealplanInput {
     days!: number
 
     @Field(() => [String])
-    meals!: string[] //'br', 'lu', 'di', 'sn'
+    meals!: ('br'|'lu'|'di'|'sn')[]
 
     @Field(() => [String])
     restrictedAlergies!: string[]

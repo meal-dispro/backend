@@ -1,6 +1,6 @@
 import {MealplanInput} from "../api/mealplan/mealplanInput";
 import {GenericError} from "./GenericError";
-import {Session} from "neo4j-driver";
+import {Integer, Session} from "neo4j-driver";
 
 export class TheAlgorithm {
     tags: string[];
@@ -16,15 +16,79 @@ export class TheAlgorithm {
         this.tags = Object.keys(data.tags);
     }
 
+    //parses the data to a matrix plan
     getPlan = async (): Promise<{ mealplan: string[][], zeroWeightFlag: boolean }> => {
-        const data = await this._filterModule();
+        //lookup func
+        const f = (s: "br" | "lu" | "di" | "sn"): "breakfast" | "lunch" | "dinner" | "snack" => {
+            const lookup = {"br": 'breakfast', "lu": 'lunch', "di": 'dinner', "sn": 'snack'}
+            // @ts-ignore
+            return lookup[s];
+        }
 
-        const output = this._decisionModule(data);
+        //count meal types
+        const count = {
+            "breakfast": 0,
+            "lunch": 0,
+            "dinner": 0,
+            "snack": 0,
+        }
+        for (let i = 0; i < this.data.meals.length; i++) {
+            count[f(this.data.meals[i])] += this.data.days;
+        }
 
-        return {mealplan: output.mealplan, zeroWeightFlag: output.zeroWeightFlag};
+        //init output matrix
+        const mealplan: string[][] = [];
+        for (let i = 0; i < this.data.days; i++) mealplan.push([]);
+
+        //filters data from the database then selects "cnt" recipes for plan
+        const genList = async (type: "breakfast" | "lunch" | "dinner" | "snack"): Promise<string[]> => {
+            if (count[type] > 0) {
+                const cnt = count[type];
+                const lim = (cnt * 2) > 35 ? 35 : cnt * 2;//add a buffer to allow for variety
+
+                const dat = await this._filterModule(type, lim);
+                if (!dat) return []
+                return this._decisionModule(cnt, dat);
+            }
+            return [];
+        }
+
+        //breakfast
+        const brPlan = await genList("breakfast");
+        //lunch
+        const luPlan = await genList("lunch");
+        //dinner
+        const diPlan = await genList("dinner");
+        //snack
+        const snPlan = await genList("snack");
+
+
+        //add a meal to each day of the plan
+        const addMeal = (plan: string[], m: number) => {
+            for (let d = 0; d < this.data.days; d++)
+                mealplan[d][m] = plan.pop() ?? "error";
+        }
+
+        //max 35 iterations, add each meal to plan
+        for (let m = 0; m < this.data.meals.length; m++) {
+            if (this.data.meals[m] === "br" && brPlan)
+                addMeal(brPlan, m);
+
+            if (this.data.meals[m] === "lu" && luPlan)
+                addMeal(luPlan, m);
+
+            if (this.data.meals[m] === "di" && diPlan)
+                addMeal(diPlan, m);
+
+            if (this.data.meals[m] === "sn" && snPlan)
+                addMeal(snPlan, m);
+        }
+
+
+        return {mealplan, zeroWeightFlag: false};
     }
 
-    _buildQuery = () => {
+    _buildQuery = (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number) => {
         //TODO: change limit based on factors
         //init vars
         let queryString = `MATCH (n: Recipe {type: $type`;
@@ -34,11 +98,11 @@ export class TheAlgorithm {
                 vegan?: boolean,
                 vegetarian?: boolean,
                 cost: number,
-                // limit: number,
+                // limit: Integer,
                 tags: string[],
                 [key: string]: unknown
             } = {
-            type: "lunch",
+            type,
             cost: this.data.cost.length,
             tags: this.tags,
             // limit: 35
@@ -71,14 +135,15 @@ export class TheAlgorithm {
         //calculate weights and order
         queryString += `WITH size(apoc.coll.intersection(n.tags, $tags)) as weight, n ORDER BY weight DESC `
 
-        //limit order and return TODO: change limit
-        queryString += `LIMIT 35 RETURN { properties: properties(n), weight: weight }`
+        //limit order and return
+        queryString += `LIMIT ${limit} RETURN { properties: properties(n), weight: weight }`
         // ???         //         WHERE weight > 0
+
         return {queryString, queryData};
     }
 
-    _filterModule = async () => {
-        const qDat = this._buildQuery();
+    _filterModule = async (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number) => {
+        const qDat = this._buildQuery(type, limit);
 
         //get the data
         const result = await this.neo.run(
@@ -87,7 +152,7 @@ export class TheAlgorithm {
         )
 
         if (result.records.length === 0)
-            throw new GenericError('no matches');
+            return null;
 
         //message reporting
         let zeroWeightFlag = false;
@@ -109,6 +174,7 @@ export class TheAlgorithm {
             } else zeroWeightFlag = true;
 
             //create matrix with data entries for TOPSIS.
+            //Note: must specify min/max in algo
             matrix.push([weight, node.cost, node.cooktime])
             //create lookup table for resolving
             index.push(node.id);
@@ -117,7 +183,7 @@ export class TheAlgorithm {
         return {index, matrix, zeroWeightFlag};
     }
 
-    _decisionModule = (filteredData: { index: string[], zeroWeightFlag: boolean, matrix: number[][] }): { mealplan: string[][], zeroWeightFlag: boolean } => {
+    _decisionModule = (qty: number, filteredData: { index: string[], zeroWeightFlag: boolean, matrix: number[][] }): string[] => {
         //https://github.com/zycobyte/the-algorithm/tree/main/src/java/com/twitter/search
 
         //TOPSIS: updates data.tags weights, not database tag count weight
@@ -125,29 +191,87 @@ export class TheAlgorithm {
         //TODO: TOPSIS ALGORITHM LAYER
         //https://www.youtube.com/watch?v=Br1NQK0Iumg
 
-        //output: the decided mealplan in the format:
-        /*+
-        [
-          [day1Meal1, day1Meal2, day1Meal3, ...],
-          [day2Meal1, day2Meal2, day2Meal3, ...],
-          ....
-          ....
-          ....
-          ....
-          ....
-        ]
-         */
+        //matrix[i][j]
+        //i = recipe
+        //j = attr
 
+        const normalized = filteredData.matrix;
 
-        return {
-            mealplan: [
-                ["44f7a4149"],
-                ["16db62e67"],
-                ["124b67621"],
-                ["dbe0a4271"],
-                ["70e67284a"],
-            ],
-            zeroWeightFlag: filteredData.zeroWeightFlag
+        //normalize: sum over each attribute
+        // X[i][j] / sqrt( sum( X[ii][j] ^ 2 ) )
+        for (let j = 0; j < normalized[0].length; j++) {
+            let div = 0;
+            for (let ii = 0; ii < normalized.length; ii++)
+                div += Math.pow(normalized[ii][j], 2);
+            div = Math.sqrt(div);
+
+            for (let i = 0; i < normalized.length; i++)
+                normalized[i][j] /= div;
         }
+
+        // console.log(normalized);
+
+        //calculate weight: no
+
+        //calculate best/worst (min/max) over each attribute
+        const best = [];
+        const worst = [];
+        for (let j = 0; j < normalized[0].length; j++) {
+            let be = normalized[0][j];
+            let wo = normalized[0][j];
+            for (let ii = 1; ii < normalized.length; ii++) {
+                if (j === 0) {
+                    //j=0 weight - max = best
+                    const weight = normalized[ii][j];
+                    if (be < weight) be = weight;
+                    if (wo > weight) wo = weight;
+                } else if (j === 1) {
+                    //j=1 cost - TODO look at metadata
+                    const cost = normalized[ii][j];
+                    if (be > cost) be = cost;
+                    if (wo < cost) wo = cost;
+                } else if (j === 2) {
+                    //j=2 cooktime - TODO look at metadata
+                    const cost = normalized[ii][j];
+                    if (be > cost) be = cost;
+                    if (wo < cost) wo = cost;
+                } else {
+                    throw new Error("Data input not set up in TOPSIS module")
+                }
+
+            }
+            best.push(be);
+            worst.push(wo);
+        }
+
+        // console.log({best, worst})
+
+        const performanceScores = [];
+        for (let i = 0; i < normalized.length; i++) {
+            let upper = 0;
+            let lower = 0;
+            for (let jj = 0; jj < normalized[i].length; jj++) {
+                //calculate euclidian distance over recipe
+                //upper: sum ( ( X[i][jj] - best[jj] ) ^ 2 )
+                //lower: sum ( ( X[i][jj] - worst[jj] ) ^ 2 )
+                upper += Math.pow(normalized[i][jj] - best[jj], 2)
+                lower += Math.pow(normalized[i][jj] - worst[jj], 2)
+            }
+            //calculate final performance score
+            //lower / ( upper + lower )
+            performanceScores.push(lower / (upper + lower))
+        }
+
+        //output: the decided meals as a list ordered from highest to lowest performance score up to qty
+        const scoreMap: {[key:string]: number} = {};
+        for(let i = 0; i < filteredData.index.length; i++){
+            scoreMap[filteredData.index[i]] = performanceScores[i];
+        }
+
+        const recipes = filteredData.index.sort((a, b) => scoreMap[b] - scoreMap[a]).slice(0, qty);
+
+        // console.log({recipes, scoreMap})
+
+        return recipes;
     }
 }
