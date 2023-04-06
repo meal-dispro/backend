@@ -5,13 +5,7 @@ import {GenericError} from "../../midware/GenericError";
 import {RecipeInput} from "./recipeInput";
 
 const logger = require('pino')()
-//https://stackoverflow.com/questions/23281888/how-to-set-the-node-id-other-than-setproperty-in-neo4j
-//https://stackoverflow.com/questions/70550455/neo4j-create-relationship-between-nodes-based-on-property
 
-
-//TODO: create mealplan: https://stackoverflow.com/questions/39327437/cypher-query-to-check-if-list1-contains-any-item-from-list2
-// https://stackoverflow.com/questions/75672970/neo4j-count-matches-made-within-list
-// MATCH(n) WHERE any(x IN ["high", "im-a-tag", "test2"] WHERE x in n.tags) return n
 
 @Service()
 export class RecipeService {

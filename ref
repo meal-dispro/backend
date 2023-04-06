@@ -13,11 +13,9 @@ middle https://typegraphql.com/docs/middlewares.html
 db https://www.tomray.dev/setup-and-deploy-graphql-server
 
 
-
 https://neo4j.com/docs/cypher-manual/current/clauses/where/
 FOR INGREDIENTS MATCHING
 MATCH(n: Ingredient) WHERE n.name STARTS WITH "p" RETURN (n);
-
 
 
 get meal plan, recipes, list and ingredients
@@ -29,12 +27,11 @@ match (r:Recipe)<-[h:has]-(pl: MealPlan)<-[b:belongsTo]-(l: List)-[c:contains]->
 
 
 
-
-
-
-
-
-
+//https://stackoverflow.com/questions/23281888/how-to-set-the-node-id-other-than-setproperty-in-neo4j
+//https://stackoverflow.com/questions/70550455/neo4j-create-relationship-between-nodes-based-on-property
+//TODO: create mealplan: https://stackoverflow.com/questions/39327437/cypher-query-to-check-if-list1-contains-any-item-from-list2
+// https://stackoverflow.com/questions/75672970/neo4j-count-matches-made-within-list
+// MATCH(n) WHERE any(x IN ["high", "im-a-tag", "test2"] WHERE x in n.tags) return n
 
 
 

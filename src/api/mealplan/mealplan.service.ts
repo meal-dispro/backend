@@ -25,7 +25,7 @@ export class MealPlanService {
             vegetarian: false,
             cost: "£££",
             // @ts-ignore
-            tags: {"im-a-tag": 10, "test2":5, "test3": 2, "boop": 1},//tag:weight
+            tags: {"im-a-tag": 3, "test2":5, "test": 2, "bob": 1},//tag:weight
             //metadata - optional, arr.length === days, arr[i].length <= meals.length
             // on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
             // on tuesday, meal 3 (dinner) must use tags: taco and meal 4 (snack) is ID

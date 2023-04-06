@@ -1,6 +1,6 @@
 import {MealplanInput} from "../api/mealplan/mealplanInput";
 import {GenericError} from "./GenericError";
-import {Integer, Session} from "neo4j-driver";
+import {Session} from "neo4j-driver";
 
 export class TheAlgorithm {
     tags: string[];
@@ -92,7 +92,6 @@ export class TheAlgorithm {
     }
 
     _buildQuery = (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number) => {
-        //TODO: change limit based on factors
         //init vars
         let queryString = `MATCH (n: Recipe {type: $type`;
         const queryData:
@@ -184,11 +183,6 @@ export class TheAlgorithm {
     }
 
     _decisionModule = (qty: number, filteredData: { index: string[], zeroWeightFlag: boolean, matrix: number[][] }): string[] => {
-        //https://github.com/zycobyte/the-algorithm/tree/main/src/java/com/twitter/search
-
-        //TOPSIS: updates data.tags weights, not database tag count weight
-
-        //TODO: TOPSIS ALGORITHM LAYER
         //https://www.youtube.com/watch?v=Br1NQK0Iumg
 
         //matrix[i][j]

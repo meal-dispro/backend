@@ -65,7 +65,7 @@ export class ListService {
     }
 
     //link or create new item
-    //TODO: note overrides qty val
+    //overrides qty val if exists
     async addItem(neo: Session, payload: { [p: string]: unknown }, id:string, name: string, qty: number): Promise<boolean>{
         try {
             let query = "MATCH(l:List) WHERE l.id = $id CREATE (l)-[c:contains {checked:false, qty:$qty}]->(i:Ingredient {name: $name}) return l,c,i";
