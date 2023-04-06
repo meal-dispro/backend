@@ -27,8 +27,8 @@ export class MealplanResolver {
 
     @Mutation(() => MealPlan)
     @UseMiddleware(isAuth, neoSess)
-    async createMealPlan(@Ctx() { payload, neo }: Context, @Arg('data', ()=>MealplanInput) mealplanInput: MealplanInput): Promise<MealPlan>{
+    async createMealPlan(@Ctx() { payload, neo }: Context, /*@Arg('data', ()=>MealplanInput) mealplanInput: MealplanInput*/): Promise<MealPlan>{
         if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
-        return await this.mealPlanService.createPlan(neo, payload, mealplanInput);
+        return await this.mealPlanService.createPlan(neo, payload);//mealplanInput);
     }
 }

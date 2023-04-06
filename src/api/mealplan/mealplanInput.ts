@@ -21,10 +21,10 @@ export class MealplanInput {
     days!: number
 
     @Field(() => [String])
-    meals!: [string] //'br', 'lu', 'di', 'sn'
+    meals!: string[] //'br', 'lu', 'di', 'sn'
 
     @Field(() => [String])
-    restrictedAlergies!: [string]
+    restrictedAlergies!: string[]
 
     @Field(() => Boolean)
     vegan!: boolean
@@ -32,15 +32,12 @@ export class MealplanInput {
     @Field(() => Boolean)
     vegetarian!: boolean
 
-    @Field(() => Number)
-    minCost!: number
-
-    @Field(() => Number)
-    maxCost!: number
+    @Field(() => String)
+    cost!: string
 
     //https://www.apollographql.com/docs/apollo-server/schema/custom-scalars/
 
-    @Field(() => Object)
+    // @Field(() => Object)
     tags!: { [key: string]: number }
     //{ "im-a-tag": 10, "test2": 5, "test3": 2, "boop": 1 }
 
@@ -48,5 +45,6 @@ export class MealplanInput {
 // on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
 // on tuesday, meal 3 (dinner) must use tags: taco and meal 4 (snack) is ID
 // NOT TO BE IMPLEMENTED: on sunday dinner is a roast. In future, impl ability to select from users favourited recipes
-//     metadata: [[{ "timemax": 10 }], [null, null, null, { "tag": "taco" }, { "meal": "0c528a" }], [], [], [], [], [null, null, null, null, { "tag": "roast", fav: true }]]
+//     metadata!: [[{ "timemax": 10 }], [null, null, null, { "tag": "taco" }, { "meal": "0c528a" }], [], [], [], [], [null, null, null, null, { "tag": "roast", fav: true }]]
+    metadata!: (({ timemax?: number, tag?: string, meal?: string, fav?: boolean }|null)[])[] //, [null, null, null, { "tag": "taco" }, { "meal": "0c528a" }], [], [], [], [], [null, null, null, null, { "tag": "roast", fav: true }]]
 }

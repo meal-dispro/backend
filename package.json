@@ -126,6 +126,7 @@
   },
   "homepage": "https://github.com/zycobyte/gqlbase#readme",
   "devDependencies": {
+    "@types/express": "github:types/express",
     "@types/jwt-simple": "^0.5.33",
     "@types/node": "^18.11.18",
     "nodemon": "^2.0.20",

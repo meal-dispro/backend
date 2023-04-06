@@ -3,6 +3,7 @@ import {Session} from "neo4j-driver";
 import {GenericError} from "../../midware/GenericError";
 import {MealPlan} from "./mealplan.entity";
 import {MealplanInput} from "./mealplanInput";
+import {TheAlgorithm} from "../../midware/TheAlgorithm";
 
 const logger = require('pino')()
 
@@ -15,16 +16,15 @@ export class MealPlanService {
     }
 
     //TODO: template: must be implemented
-    async createPlan(neo: Session, payload: { [p: string]: unknown }, data: MealplanInput): Promise<MealPlan> {
-
-        const thisIsNotAVariableItsJustMePuttingAllTheDataInOnePlace = {
+    async createPlan(neo: Session, payload: { [p: string]: unknown }): Promise<MealPlan> {
+        const data: MealplanInput = {
             days: 7,
             meals: ['br','lu','lu','di','sn'],
             restrictedAlergies: ['celary', 'mustard', 'gluten'],
-            vegan: true,
-            vegetarian: true,
-            minCost: 0,
-            maxCost: 1000,
+            vegan: false,
+            vegetarian: false,
+            cost: "£££",
+            // @ts-ignore
             tags: {"im-a-tag": 10, "test2":5, "test3": 2, "boop": 1},//tag:weight
             //metadata - optional, arr.length === days, arr[i].length <= meals.length
             // on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
@@ -34,38 +34,11 @@ export class MealPlanService {
 
         }
 
+        const module = new TheAlgorithm(neo, data);
+        
+        //https://github.com/zycobyte/the-algorithm/tree/main/src/java/com/twitter/search
+
         //TOPSIS: updates data.tags weights, not database tag count weight
-
-        const recipeModifier: {type:string, vegan?:boolean, vegetarian?: boolean} = {type: "lunch"}
-        if(thisIsNotAVariableItsJustMePuttingAllTheDataInOnePlace.vegan) //if vegan, else do nothing because (not vegan == vegan || not vegan)
-            recipeModifier['vegan'] = true;
-        if(thisIsNotAVariableItsJustMePuttingAllTheDataInOnePlace.vegetarian) //if vegetarian
-            recipeModifier['vegetarian'] = true;
-
-        //TODO: data filter layer
-        // allergy requirements, as well as other diet filters. It will also filter out meals way out of the price range and (average cooking time)?
-        // -                        match type and restrictions
-        //         MATCH (n: Recipe {type: "lunch", vegan: true})
-        //              ensure cost is in range                     filter out ingredients, is this efficient??
-        //         WHERE n.cost > 0 AND n.cost < 1000 AND NOT ((n)-[:uses]->(:Ingredient {name: "stock"}))
-        // -            calculate weightings based on input tags and order
-        //         WITH size(apoc.coll.intersection(n.tags, ["im-a-tag", "test2"])) as weight, n
-        //         ORDER BY weight DESC
-        // -            need to change the limit based on number of meal type per day
-        //         LIMIT 35
-        // -            maybe remove this? or should i repeat dishes if there arent enough
-        //         WHERE weight > 0
-        //         RETURN { properties: properties(n), weight: weight }
-        /* -
-                MATCH (n: Recipe {type: "lunch", vegan: true})
-                WHERE n.cost > 0 AND n.cost < 1000 AND NOT ((n)-[:uses]->(:Ingredient {name: "stock"}))
-                WITH size(apoc.coll.intersection(n.tags, ["im-a-tag", "test2"])) as weight, n
-                ORDER BY weight DESC
-                LIMIT 35
-                WHERE weight > 0
-                RETURN { properties: properties(n), weight: weight }
-         */
-
 
         //TODO: TOPSIS ALGORITHM LAYER
         //https://www.youtube.com/watch?v=Br1NQK0Iumg

@@ -19,13 +19,10 @@ import {MealplanResolver} from "./api/mealplan/mealplan.resolver";
 import {MealPlanService} from "./api/mealplan/mealplan.service";
 import {ListService} from "./api/list/list.service";
 import {ListResolver} from "./api/list/list.resolver";
-import {GraphQLScalarType} from "graphql";
-
 const neo4j = require('neo4j-driver')
 
 const { db } = require('./prisma/client')
 const logger = require('pino')()
-const { loadFiles } = require('@graphql-tools/load-files')
 
 const main = async () => {
     dotenv.config();
@@ -64,8 +61,8 @@ const main = async () => {
         plugins: [ ApolloServerPluginLandingPageGraphQLPlayground ],
         formatError: formatError,
         context: _createContext,
-        resolvers: await loadFiles('src/api/**/*.graphql'),
     });
+    // resolvers: await loadFiles('src/api/**/*.graphql'),
 
     const app = Express();
     const PORT = Number(process.env.PORT);
@@ -75,6 +72,7 @@ const main = async () => {
     // @ts-ignore
     server.applyMiddleware({ app });
 
+    //cleanup
     process.on('SIGTERM', async () => {
         console.info('SIGTERM signal received (kill).');
         await driver.close()
