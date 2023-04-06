@@ -35,34 +35,9 @@ export class MealPlanService {
         }
 
         const module = new TheAlgorithm(neo, data);
-        
-        //https://github.com/zycobyte/the-algorithm/tree/main/src/java/com/twitter/search
-
-        //TOPSIS: updates data.tags weights, not database tag count weight
-
-        //TODO: TOPSIS ALGORITHM LAYER
-        //https://www.youtube.com/watch?v=Br1NQK0Iumg
-
-        //output: the decided mealplan in the format:
-        /*+
-        [
-          [day1Meal1, day1Meal2, day1Meal3, ...],
-          [day2Meal1, day2Meal2, day2Meal3, ...],
-          ....
-          ....
-          ....
-          ....
-          ....
-        ]
-         */
-        const output = [
-            ["44f7a4149"],
-            ["16db62e67"],
-            ["124b67621"],
-            ["dbe0a4271"],
-            ["70e67284a"],
-        ]
-
+        const output = await module.getPlan();
+        const mealplan = output.mealplan;
+        console.log(mealplan)
 
         try {
             const ID = (() => {
@@ -77,11 +52,11 @@ export class MealPlanService {
 
             //O(n^2) TODO: limit meals to 5/day 7 days. MAX: 35 iterations
             //take in nested array of IDs, merge recipe x with plan pl, has day and meal number stored
-            for(let day = 0; day < output.length; day++){
-                for(let meal = 0; meal < output[day].length; meal++){
+            for(let day = 0; day < mealplan.length; day++){
+                for(let meal = 0; meal < mealplan[day].length; meal++){
                     const x = `${day}${meal}`;
                     query += `MERGE (r${x}:Recipe {id: $rId${x}}) MERGE (pl)-[:has {day:${day}, meal:${meal}}]->(r${x}) `;
-                    params["rId"+x] = output[day][meal];
+                    params["rId"+x] = mealplan[day][meal];
                 }
             }
 
