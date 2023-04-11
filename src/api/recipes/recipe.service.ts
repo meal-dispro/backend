@@ -60,6 +60,13 @@ export class RecipeService {
     async createRecipe(neo: Session, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
         if(!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
             throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
+        if(recipeInput.vegan)
+            recipeInput.vegetarian = true;
+        // @ts-ignore
+        if(recipeInput.ingredients.length === 0)
+            throw new GenericError("Meal must contain ingredients")
+
+
 
         /**
          CREATE (r:Recipe {title:'new2'})

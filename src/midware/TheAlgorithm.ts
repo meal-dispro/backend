@@ -44,7 +44,7 @@ export class TheAlgorithm {
         const genList = async (type: "breakfast" | "lunch" | "dinner" | "snack"): Promise<string[]> => {
             if (count[type] > 0) {
                 const cnt = count[type];
-                const lim = (cnt * 2) > 35 ? 35 : cnt * 2;//add a buffer to allow for variety
+                const lim = (cnt * 2) > 50 ? 50 : cnt * 2;//add a buffer to allow for variety
 
                 const dat = await this._filterModule(type, lim);
                 if (!dat) return []
@@ -189,7 +189,7 @@ export class TheAlgorithm {
         //i = recipe
         //j = attr
 
-        const normalized = filteredData.matrix;
+        const normalized = [...filteredData.matrix];
 
         //normalize: sum over each attribute
         // X[i][j] / sqrt( sum( X[ii][j] ^ 2 ) )
