@@ -38,7 +38,10 @@ export class Recipe {
     @Field(() => Number)
     cost!: number;
 
-    @Field(()=> [Ingredient])
+    @Field(() => [String])
+    tags!: string[];
+
+    @Field(() => [Ingredient])
     ingredients!: [Ingredient]
 }
 

@@ -11,6 +11,34 @@ const logger = require('pino')()
 export class RecipeService {
     // constructor(private readonly _: any) {}
 
+    async randomRecipe(neo: Session, lim:number): Promise<Recipe[]>{
+        if(!Number(lim)) throw new GenericError("Limit must be a number");
+        if(lim < 0) lim = 1;
+        if(lim > 20) lim = 20;
+        const q = `MATCH (r:Recipe) WITH r, rand() AS number ORDER BY number LIMIT ${lim} RETURN r`;
+        try {
+            const result = await neo.run(q)
+
+            if(result.records.length === 0)
+                throw new GenericError('Could not find any recipes.');
+
+            const nodes: Recipe[] = [];
+
+            for(let i = 0; i < result.records.length; i++) {
+                const singleRecord = result.records[i]
+                const node = singleRecord.get(0).properties;
+                node.ingredients = []; //attribute required but not provided.
+                nodes.push(node);
+            }
+            return nodes;
+        } catch (e) {
+            logger.error(e);
+            throw new GenericError("An error occurred while deleting recipe.");
+        } finally {
+            await neo.close()
+        }
+    }
+
     async deleteRecipe(neo: Session, payload: { [p: string]: unknown }, id: string): Promise<boolean> {
         try {
             const result = await neo.run(

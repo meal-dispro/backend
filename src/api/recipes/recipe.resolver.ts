@@ -12,6 +12,7 @@ import {neoSess} from "../../midware/neoSess";
 import {Recipe} from "./recipe.entity";
 import {GenericError} from "../../midware/GenericError";
 import {RecipeById, RecipeInput} from "./recipeInput";
+import {Integer} from "neo4j-driver";
 
 @Service()
 @Resolver((_of) => Recipe)
@@ -22,6 +23,13 @@ export class RecipeResolver {
         private readonly _: any,
     ) {
         this.recipeService = new (this._.services.find((a: any) => a.id === 'recipeService').value)(this._);
+    }
+
+    @Query(() => [Recipe])
+    @UseMiddleware(isAuth, neoSess)
+    async randomRecipe(@Ctx() { payload, neo }: Context, @Arg('limit', ()=>Number) lim:number): Promise<Recipe[]> {
+        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
+        return await this.recipeService.randomRecipe(neo, lim);
     }
 
     @Mutation(() => Recipe)
