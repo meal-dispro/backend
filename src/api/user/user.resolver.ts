@@ -19,12 +19,12 @@ export class UserResolver {
     constructor(
         private readonly _: any,
     ) {
-        this.userService = new (this._.services.find((a: any) => a.id === 'userService').value)(this._);
+        this.userService = new UserService(_);
     }
 
     @Query(() => String)
     @UseMiddleware(isAuth)
-    async Me(@Ctx() { payload }: Context) {
+    Me(@Ctx() { payload }: Context) {
         return `Your user id : ${payload!.sub}`;
     }
 

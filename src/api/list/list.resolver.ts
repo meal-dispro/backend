@@ -18,10 +18,8 @@ import {AddItem, CheckItem, GetList, RemoveItem} from "./listInput";
 export class ListResolver {
     private readonly listService: ListService
 
-    constructor(
-        private readonly _: any,
-    ) {
-        this.listService = new (this._.services.find((a: any) => a.id === 'listService').value)(this._);
+    constructor() {
+        this.listService = new ListService();
     }
 
     @Query(() => List)

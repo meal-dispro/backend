@@ -11,18 +11,14 @@ import {Context} from "../../midware/context";
 import {neoSess} from "../../midware/neoSess";
 import {MealPlan, PlanLayout} from "./mealplan.entity";
 import {GenericError} from "../../midware/GenericError";
-import {MealplanInput} from "./mealplanInput";
-import {GraphQLScalarType} from "graphql";
 
 @Service()
 @Resolver((_of) => MealPlan)
 export class MealplanResolver {
     private readonly mealPlanService: MealPlanService
 
-    constructor(
-        private readonly _: any,
-    ) {
-        this.mealPlanService = new (this._.services.find((a: any) => a.id === 'mealPlanService').value)(this._);
+    constructor() {
+        this.mealPlanService = new MealPlanService();
     }
 
     @Mutation(() => String)

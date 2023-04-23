@@ -11,7 +11,7 @@ export const
                 try {
                     return JSON.parse(value)
                 } catch (e) {
-                    throw new GenericError(e?.toString() ?? 'oops');//TODO change err logs
+                    throw new GenericError(e+'' ?? 'oops');//TODO change err logs
                     return null
                 }
             }

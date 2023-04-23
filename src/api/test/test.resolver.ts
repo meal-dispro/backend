@@ -4,6 +4,7 @@ import {
 } from 'type-graphql';
 import { Test } from './test.entity';
 import {Inject, Service} from "typedi";
+import {TestService} from "./test.service";
 
 @Service()
 @Resolver((_of) => Test)
@@ -13,7 +14,7 @@ export class TestResolver {
     constructor(
        private readonly _: any,
     ) {
-        this.testService = new (this._.services.find((a: any) => a.id === 'testService').value)(this._);
+        this.testService = new TestService(this._);
     }
 
     @Query(() => String, { nullable: false })

@@ -19,10 +19,8 @@ import {Integer} from "neo4j-driver";
 export class RecipeResolver {
     private readonly recipeService: RecipeService
 
-    constructor(
-        private readonly _: any,
-    ) {
-        this.recipeService = new (this._.services.find((a: any) => a.id === 'recipeService').value)(this._);
+    constructor() {
+        this.recipeService = new RecipeService();
     }
 
     @Query(() => [Recipe])
