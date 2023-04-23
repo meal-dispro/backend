@@ -7,9 +7,15 @@ export class MealPlan {
     @Field(() => ID)
     id!: string;
 
-    @Field(() => [Recipe])
-    recipes!: [Recipe];
+    @Field(() => Number)
+    stamp!: number;
 
-    @Field(() => List)
-    list!: List
+    @Field(() => String)
+    uid!: string
+}
+
+@ObjectType({description: 'The Plan layout Model'})
+export class PlanLayout{
+    @Field(() => [[Recipe]])
+    data!: Recipe[][]
 }

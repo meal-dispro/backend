@@ -53,34 +53,47 @@ export class TheAlgorithm {
             return [];
         }
 
+        //gets a single meal when using meta data
         const getOne = async (type: "breakfast" | "lunch" | "dinner" | "snack", tag:string): Promise<string> => {
             const dat = await this._filterModule(type, 5, [tag]); //choose one from 5
             if(!dat) return 'error';
             return this._decisionModule(1, dat)[0];
         }
 
+        const t: {[key: number]: any} = {0: new Date().getTime()};
         //breakfast
         const brPlan = await genList("breakfast");
+        t[1] = new Date().getTime();
         //lunch
         const luPlan = await genList("lunch");
+        t[2] = new Date().getTime();
         //dinner
         const diPlan = await genList("dinner");
+        t[3] = new Date().getTime();
         //snack
         const snPlan = await genList("snack");
+        t[4] = new Date().getTime();
 
+        console.log({
+            'br': t[1]-t[0],
+            'lu': t[2]-t[1],
+            'di': t[3]-t[2],
+            'sn': t[4]-t[3],
+        });
 
         //add a meal to each day of the plan
         const addMeal = async (plan: string[], m: number) => {
             for (let d = 0; d < this.data.days; d++){
                 //process meta data
-                const mealMeta = this.data.metadata[d][m];
-
-                if(mealMeta){
-                    if(mealMeta.tag)
-                        mealplan[d][m] = await getOne(f(this.data.meals[m]), mealMeta.tag);
-                    if(mealMeta.meal)
-                        mealplan[d][m] = mealMeta.meal;
-                    continue;
+                if(this.data.metadata.length > d) {
+                    const mealMeta = this.data.metadata[d][m];
+                    if (mealMeta) {
+                        if (mealMeta.tag)
+                            mealplan[d][m] = await getOne(f(this.data.meals[m]), mealMeta.tag);
+                        if (mealMeta.meal)
+                            mealplan[d][m] = mealMeta.meal;
+                        continue;
+                    }
                 }
 
                 const val = plan.shift() ?? "error";

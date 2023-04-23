@@ -11,20 +11,21 @@ const logger = require('pino')()
 export class RecipeService {
     // constructor(private readonly _: any) {}
 
-    async randomRecipe(neo: Session, lim:number): Promise<Recipe[]>{
-        if(!Number(lim)) throw new GenericError("Limit must be a number");
-        if(lim < 0) lim = 1;
-        if(lim > 20) lim = 20;
+    async randomRecipe(neo: Session, lim: number): Promise<Recipe[]> {
+        // await this.bulkCreateRecipe(neo);
+        if (!Number(lim)) throw new GenericError("Limit must be a number");
+        if (lim < 0) lim = 1;
+        if (lim > 20) lim = 20;
         const q = `MATCH (r:Recipe) WITH r, rand() AS number ORDER BY number LIMIT ${lim} RETURN r`;
         try {
             const result = await neo.run(q)
 
-            if(result.records.length === 0)
+            if (result.records.length === 0)
                 throw new GenericError('Could not find any recipes.');
 
             const nodes: Recipe[] = [];
 
-            for(let i = 0; i < result.records.length; i++) {
+            for (let i = 0; i < result.records.length; i++) {
                 const singleRecord = result.records[i]
                 const node = singleRecord.get(0).properties;
                 node.ingredients = []; //attribute required but not provided.
@@ -62,14 +63,14 @@ export class RecipeService {
                 {id}
             )
 
-            if(result.records.length === 0)
+            if (result.records.length === 0)
                 throw new GenericError('Recipe does not exist');
 
             const singleRecord = result.records[0]
             const node = singleRecord.get(0).properties;
             node.ingredients = [];
 
-            for (let i = 0; i < result.records.length; i ++) {
+            for (let i = 0; i < result.records.length; i++) {
                 node.ingredients.push({
                     name: result.records[i].get(1).properties.name,
                     qty: result.records[i].get(2).properties.qty
@@ -85,15 +86,52 @@ export class RecipeService {
         }
     }
 
+    async bulkCreateRecipe(neo: Session) {
+        const s = "bulkinsertstresstest";
+        const total = 100000;
+        for(let i = 0; i < total; i++) {
+            if(i % (total/10) === 0) console.log(`${i/total*100}%`)
+
+            const ID = (() => {
+                let n = (Math.random() * 0xfffff * 1000000).toString(16);
+                return n.slice(0, 9);
+            })();
+
+            const c = {
+                id: ID,
+                tags: [s],
+                title: s+i,
+                link: s,
+                icon: s,
+                type: 'lunch',
+                vegan: true,
+                vegetarian: true,
+                description: s,
+                cooktime: 1,
+                cost: 1,
+                serves: i, //TO DELETE IN SECTIONS
+                author: 19,
+                ingName: s,
+                qty: 1,
+            }
+
+            const result = await neo.run(
+                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) MERGE (in:Ingredient {name: $ingName}) MERGE (r)-[ri:uses {qty: $qty}]->(in) RETURN r`,
+                c
+            )
+        }
+        console.log("done");
+    }
+
+
     async createRecipe(neo: Session, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
-        if(!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
+        if (!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
             throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
-        if(recipeInput.vegan)
+        if (recipeInput.vegan)
             recipeInput.vegetarian = true;
         // @ts-ignore
-        if(recipeInput.ingredients.length === 0)
+        if (recipeInput.ingredients.length === 0)
             throw new GenericError("Meal must contain ingredients")
-
 
 
         /**
