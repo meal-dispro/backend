@@ -17,7 +17,7 @@ export class TheAlgorithm {
     }
 
     //parses the data to a matrix plan
-    getPlan = async (): Promise<{ mealplan: string[][], zeroWeightFlag: boolean }> => {
+    getPlan = async (): Promise<string[][]> => {
         //lookup func
         const f = (s: "br" | "lu" | "di" | "sn"): "breakfast" | "lunch" | "dinner" | "snack" => {
             const lookup = {"br": 'breakfast', "lu": 'lunch', "di": 'dinner', "sn": 'snack'}
@@ -46,11 +46,17 @@ export class TheAlgorithm {
                 const cnt = count[type];
                 const lim = (cnt * 2) > 50 ? 50 : cnt * 2;//add a buffer to allow for variety
 
-                const dat = await this._filterModule(type, lim);
+                const dat = await this._filterModule(type, lim, this.tags);
                 if (!dat) return []
                 return this._decisionModule(cnt, dat);
             }
             return [];
+        }
+
+        const getOne = async (type: "breakfast" | "lunch" | "dinner" | "snack", tag:string): Promise<string> => {
+            const dat = await this._filterModule(type, 5, [tag]); //choose one from 5
+            if(!dat) return 'error';
+            return this._decisionModule(1, dat)[0];
         }
 
         //breakfast
@@ -64,8 +70,19 @@ export class TheAlgorithm {
 
 
         //add a meal to each day of the plan
-        const addMeal = (plan: string[], m: number) => {
+        const addMeal = async (plan: string[], m: number) => {
             for (let d = 0; d < this.data.days; d++){
+                //process meta data
+                const mealMeta = this.data.metadata[d][m];
+
+                if(mealMeta){
+                    if(mealMeta.tag)
+                        mealplan[d][m] = await getOne(f(this.data.meals[m]), mealMeta.tag);
+                    if(mealMeta.meal)
+                        mealplan[d][m] = mealMeta.meal;
+                    continue;
+                }
+
                 const val = plan.shift() ?? "error";
                 plan.push(val);//cycle meals to provide meals if low results
                 mealplan[d][m] = val;
@@ -75,23 +92,23 @@ export class TheAlgorithm {
         //max 35 iterations, add each meal to plan
         for (let m = 0; m < this.data.meals.length; m++) {
             if (this.data.meals[m] === "br" && brPlan)
-                addMeal(brPlan, m);
+                await addMeal(brPlan, m);
 
             if (this.data.meals[m] === "lu" && luPlan)
-                addMeal(luPlan, m);
+                await addMeal(luPlan, m);
 
             if (this.data.meals[m] === "di" && diPlan)
-                addMeal(diPlan, m);
+                await addMeal(diPlan, m);
 
             if (this.data.meals[m] === "sn" && snPlan)
-                addMeal(snPlan, m);
+                await addMeal(snPlan, m);
         }
 
 
-        return {mealplan, zeroWeightFlag: false};
+        return mealplan;
     }
 
-    _buildQuery = (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number) => {
+    _buildQuery = (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number, tags: string[]) => {
         //init vars
         let queryString = `MATCH (n: Recipe {type: $type`;
         const queryData:
@@ -106,7 +123,7 @@ export class TheAlgorithm {
             } = {
             type,
             cost: this.data.cost.length,
-            tags: this.tags,
+            tags: tags,
             // limit: 35
         }
 
@@ -141,8 +158,8 @@ export class TheAlgorithm {
         return {queryString, queryData};
     }
 
-    _filterModule = async (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number) => {
-        const qDat = this._buildQuery(type, limit);
+    _filterModule = async (type: "breakfast" | "lunch" | "dinner" | "snack", limit: number, tags: string[]) => {
+        const qDat = this._buildQuery(type, limit, tags);
 
         //get the data
         const result = await this.neo.run(
@@ -162,10 +179,11 @@ export class TheAlgorithm {
         //for each record, create a data matrix and id lookup table.
         for (let i = 0; i < result.records.length; i++) {
             const singleRecord = result.records[i]
-            let weight = Number(singleRecord.get(0).weight);
+            const orWeight = Number(singleRecord.get(0).weight);
+            let weight = orWeight
             const node = singleRecord.get(0).properties;
 
-            //if meal matches tags, multiply by tag weights to get final weight
+            //if meal matches tags, multiply by all tag weights to get final weight
             if (weight > 0) {
                 for (let i = 0; i < node.tags.length; i++)
                     if (this.tags.includes(node.tags[i]))
@@ -174,7 +192,7 @@ export class TheAlgorithm {
 
             //create matrix with data entries for TOPSIS.
             //Note: must specify min/max in algo
-            matrix.push([weight, node.cost, node.cooktime])
+            matrix.push([orWeight, weight, node.cost, node.cooktime])
             //create lookup table for resolving
             index.push(node.id);
         }
@@ -215,17 +233,22 @@ export class TheAlgorithm {
             let wo = normalized[0][j];
             for (let ii = 1; ii < normalized.length; ii++) {
                 if (j === 0) {
-                    //j=0 weight - max = best
+                    // orWeight - max = best
                     const weight = normalized[ii][j];
                     if (be < weight) be = weight;
                     if (wo > weight) wo = weight;
                 } else if (j === 1) {
-                    //j=1 cost - TODO look at metadata
+                    // weight - max = best
+                    const weight = normalized[ii][j];
+                    if (be < weight) be = weight;
+                    if (wo > weight) wo = weight;
+                } else if (j === 2) {
+                    // cost - TODO look at metadata
                     const cost = normalized[ii][j];
                     if (be > cost) be = cost;
                     if (wo < cost) wo = cost;
-                } else if (j === 2) {
-                    //j=2 cooktime - TODO look at metadata
+                } else if (j === 3) {
+                    // cooktime - TODO look at metadata
                     const cost = normalized[ii][j];
                     if (be > cost) be = cost;
                     if (wo < cost) wo = cost;

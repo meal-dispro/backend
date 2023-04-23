@@ -27,16 +27,15 @@ export class MealPlanService {
             // @ts-ignore
             tags: {"customisable": 10, "toasty":1, "tofu": 2, "wrap": 1, "healthy": 2, "sandwich": 2, "chez": 2},//tag:weight
             //metadata - optional, arr.length === days, arr[i].length <= meals.length
-            // on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
+            // in future: on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
             // on tuesday, meal 3 (dinner) must use tags: taco and meal 4 (snack) is ID
             // NOT TO BE IMPLEMENTED: on sunday dinner is a roast. In future, impl ability to select from users favourited recipes
-            metadata: [[{"timemax": 10}],[null, null, null, {"tag": "taco"}, {"meal": "0c528a"}],[],[],[],[],[null, null, null, null, {"tag": "roast", fav:true}]],
+            metadata: [[],[null, null, {"tag": "taco"}, {"meal": "64c705243"}],[],[],[],[],[null, null, {"tag": "roast", fav:true}]],
 
         }
 
         const module = new TheAlgorithm(neo, data);
-        const output = await module.getPlan();
-        const mealplan = output.mealplan;
+        const mealplan = await module.getPlan();
         console.log(mealplan)
 
         try {
@@ -60,8 +59,7 @@ export class MealPlanService {
             for(let day = 0; day < mealplan.length; day++){
                 for(let meal = 0; meal < mealplan[day].length; meal++){
                     if(mealplan[day][meal] === "error"){
-                        notEnoughMealsFlag = true;
-                        continue;
+                        throw new GenericError("The meal plan was unable to be created. This could be due to meal requirements that are not compatible");
                     }
                     const x = `${day}${meal}`;
                     saveCreateQuery += `,(pl)-[:has {day:${day}, meal:${meal}}]->(r${x})`;
