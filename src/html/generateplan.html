@@ -27,6 +27,7 @@
     let store = [];
     let outTags = {};
     let currentTags = [];
+    let done = 0;
 
     fetch("http://localhost:3004/graphql", {
         method: "POST",
@@ -95,12 +96,12 @@
         if (!cDat) {
             return sendRequest();
         }
-
+        done ++;
         currentTags = cDat.tags;
 
         $('#choose').html(
             `<div style="width: 450px; height: 320px; border: 1px solid black">
-                            <h3>${cDat.title}</h3><img src="${cDat.icon}" width="200" height="200"><p>${currentTags}</p>
+                            <h3>[${done}/15] ${cDat.title}</h3><img src="${cDat.icon}" width="200" height="200"><p>${currentTags}</p>
                          </div>
                          <button onclick="updateTags(-2)">-2</button>
                          <button onclick="updateTags(-1)">-1</button>

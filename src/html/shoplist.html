@@ -48,7 +48,7 @@ ${d[i].item.qty} x ${d[i].item.name}</div>`)
                 "Content-Type": "application/json",
                 Accept: "application/json",
             },
-            body: JSON.stringify({query: `mutation {checkListItem(data:{id:"d191e6c94", name:"${name}", checked:${bool}})}`}),
+            body: JSON.stringify({query: `mutation {checkListItem(data:{id:"${paramID}", name:"${name}", checked:${bool}})}`}),
         })
             .then(refresh)
     }

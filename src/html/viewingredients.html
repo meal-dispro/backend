@@ -8,8 +8,11 @@
 
 </head>
 <body>
-<button onclick="location.href='./overview.html'">home</button>
-<div id="list">list of ingredients</div>
+<div id="btn">
+    <button onclick="location.href='./overview.html'">home</button>
+
+</div>
+<div id="list"><div style="width: 250px; height: 40px; border-bottom: 1px solid black">list of ingredients</div></div>
 </body>
 </html>
 
@@ -30,7 +33,7 @@
             const r = data.data.getRecipe;
             const d = r.ingredients;
             console.log(d);
-            $('#list').append(`<button onclick="location.href='${r.link}'">Open recipe</button>`)
+            $('#btn').append(`<button onclick="location.href='${r.link}'">Open recipe</button>`)
 
             for (let i = 0; i < d.length; i++)
                 $('#list').append(`<div style="width: 250px; height: 40px; border-bottom: 1px solid black">${d[i].qty} x ${d[i].name}</div>`)
