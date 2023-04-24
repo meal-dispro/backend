@@ -3,11 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
 </head>
 <body>
 <button onclick="location.href='./overview.html'">home</button>
 
-<button onclick="location.href='./shoplist.html?id=123'">view shopping list</button>
-<div>list of meals</div>
+<button id="viewlist">view shopping list</button>
+<div id="list">list of meals</div>
 </body>
 </html>
+
+<script>
+    const param = new URLSearchParams(window.location.search);
+    const paramID = param.entries().next().value[1];
+    $('#viewlist').attr('onclick',`location.href='./shoplist.html?id=${paramID}'`)
+
+    fetch("http://localhost:3004/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({ query:"{  getSinglePlanMeals(id:\""+paramID+"\"){\n" +
+                "    data{title, description, id, icon, type, tags}\n" +
+                "  }\n}" }),
+    })
+        .then(r => r.json())
+        .then(data => {
+            const d=data.data.getSinglePlanMeals.data;
+            console.log(d);
+            for(let day = 0; day < d.length; day++) {
+                if(d[day].length === 0) continue;
+                
+                $('#list').append(`<div style="width: 450px; height: 125px; border: 1px solid black"><h1>Day ${day+1}</h1></div>`)
+                for(let meal = 0; meal < d[day].length; meal++) {
+                    const cDat = d[day][meal];
+                    $('#list').append(
+                        `<div onclick="location.href='./viewingredients.html?id=${cDat.id}'" style="width: 450px; height: 320px; border: 1px solid black">
+                            <img src="${cDat.icon}" width="100" height="100"><h3>For ${cDat.type}: ${cDat.title}</h3><p>${cDat.description}</p><p>${cDat.tags}</p>
+                         </div>`)
+                }
+            }
+        });
+</script>

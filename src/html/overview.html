@@ -3,10 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 </head>
 <body>
 <button onclick="location.href='./overview.html'">home</button>
 <button onclick="location.href='./generateplan.html'">New Meal Plan</button>
-<div>list of meal plans</div>
+<div id="list">list of meal plans</div>
 </body>
 </html>
+
+<script>
+    fetch("http://localhost:3004/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({ query:"{getUserMealPlans{id,stamp}}" }),
+    })
+        .then(r => r.json())
+        .then(data => {const d=data.data.getUserMealPlans;for(let i = 0; i < d.length; i++)$('#list').append(`<div onclick="location.href='./viewplan.html?id=${d[i].id}'" style="width: 250px; height: 50px; border: 1px solid black">${new Date(d[i].stamp).toDateString()}<br>${d[i].id}</div>`)});
+</script>

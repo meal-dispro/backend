@@ -3,11 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
 </head>
 <body>
 <button onclick="location.href='./overview.html'">home</button>
 
-<div>list of fields here</div>
-<button onclick="location.href='./viewplan.html?id=123'">generate!</button>
+<div>Plan Requirements</div>
+<div id="settings">
+    <p>days <input type=number value="7" id="days"></p>
+    <p>meal order <input value="br,lu,di,sn" id="order"></p>
+    <p>max cost <input value="£££" id="cost"></p>
+    <p>vegan <input checked type="checkbox" id="vegan"></p>
+    <p>vegetarian <input checked type="checkbox" id="vegetarian"></p>
+    <p>allergies <input value="mustard,celery" id="allergies"></p>
+</div>
+
+<div id="choose"></div>
 </body>
 </html>
+
+<script>
+    let store = [];
+    let outTags = {};
+    let currentTags = [];
+
+    fetch("http://localhost:3004/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({query: `{  randomRecipe(limit:15){ title, icon, tags }}`}),
+    })
+        .then(r => r.json())
+        .then(data => {
+            // const d = data.data.getRecipe.data;
+            store = data.data.randomRecipe;
+            showNext();
+
+            // $('#choose').append(`<button onclick="location.href='${r.link}'">Open recipe</button>`)
+            //
+            // for (let i = 0; i < d.length; i++)
+        });
+
+    function updateTags(val) {
+        for (let i = 0; i < currentTags.length; i++)
+            if (outTags[currentTags[i]]) outTags[currentTags[i]] += val;
+            else outTags[currentTags[i]] = val;
+        showNext();
+    }
+
+    function sendRequest() {
+        //remove negatives
+        const _t = {};
+        const tKey = Object.keys(outTags);
+        for (let i = 0; i < tKey.length; i++)
+            if (outTags[tKey[i]] > 0) _t[tKey[i]] = outTags[tKey[i]];
+
+        fetch("http://localhost:3004/graphql", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({
+                query:
+                    `mutation { createMealPlan(data:{
+                        days: ${Number($('#days').val())},
+                        meals: ["${$('#order').val().split(",").join("\",\"")}"],
+                        restrictedAlergies: ["${$('#allergies').val().split(",").join("\",\"")}"],
+                        vegan: ${$('#vegan').is(":checked")},
+                        vegetarian: ${$('#vegetarian').is(":checked")},
+                        cost: "${$('#cost').val()}",
+                        tags: "${JSON.stringify(_t).replaceAll("\"", "\\\"")}",
+                    })}`
+            }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                // const d = data.data.getRecipe.data;
+                const id = data.data.createMealPlan;
+                console.log(id);
+                location.href=`./viewplan.html?id=${id}`;
+            });
+
+    }
+
+    function showNext() {
+        const cDat = store.pop();
+        if (!cDat) {
+            return sendRequest();
+        }
+
+        currentTags = cDat.tags;
+
+        $('#choose').html(
+            `<div style="width: 450px; height: 320px; border: 1px solid black">
+                            <h3>${cDat.title}</h3><img src="${cDat.icon}" width="200" height="200"><p>${currentTags}</p>
+                         </div>
+                         <button onclick="updateTags(-2)">-2</button>
+                         <button onclick="updateTags(-1)">-1</button>
+                         <button onclick="updateTags(0)">0</button>
+                         <button onclick="updateTags(1)">1</button>
+                         <button onclick="updateTags(2)">2</button>
+                         <div style="width: 450px; height: 150px; border: 1px solid black">${JSON.stringify(outTags)}</div>
+
+`
+        )
+
+    }
+</script>

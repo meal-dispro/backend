@@ -3,11 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
 </head>
 <body>
 <button onclick="location.href='./overview.html'">home</button>
 
-<button onclick="location.href='./viewplan.html?id=123'">back to plan</button>
-<div>list of ingredients</div>
+<button id="goback">back to plan</button>
+<div id="list">list of ingredients</div>
 </body>
 </html>
+
+
+<script>
+    const param = new URLSearchParams(window.location.search);
+    const paramID = param.entries().next().value[1];
+    $('#goback').attr('onclick',`location.href='./viewplan.html?id=${paramID}'`)
+
+    function refresh() {
+        const cell = $('#list');
+        cell.html('list of ingredients')
+        fetch("http://localhost:3004/graphql", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({query: "{getList(data:{id:\""+paramID+"\"}){items{item{name, qty}, checked}}}"}),
+        })
+            .then(r => r.json())
+            .then(data => {
+                const d = data.data.getList.items;
+                for (let i = 0; i < d.length; i++)
+                    cell.append(`<div style="width: 250px; height: 40px; border-bottom: 1px solid black">
+<input type="checkbox" id="${d[i].item.name}" onclick="check('${d[i].item.name}', ${!d[i].checked})" ${d[i].checked?'checked':''}>
+${d[i].item.qty} x ${d[i].item.name}</div>`)
+            });
+    }
+
+    function check(name, bool) {
+        fetch("http://localhost:3004/graphql", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({query: `mutation {checkListItem(data:{id:"d191e6c94", name:"${name}", checked:${bool}})}`}),
+        })
+            .then(refresh)
+    }
+
+    refresh()
+</script>

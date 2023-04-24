@@ -76,24 +76,28 @@ export class MealPlanService {
         }
     }
 
-    //TODO: template: must be implemented
-    async createPlan(neo: Session, payload: { [p: string]: unknown }): Promise<string> {
-        const data: MealplanInput = {
-            days: 7,
-            meals: ['br', 'lu', 'di', 'sn'],
-            restrictedAlergies: ['celary', 'mustard', 'gluten'],
-            vegan: false,
-            vegetarian: false,
-            cost: "£££",
-            // @ts-ignore
-            tags: {'bulkinsertstresstest': 1}, //{"customisable": 10, "toasty":1, "tofu": 2, "wrap": 1, "healthy": 2, "sandwich": 2, "chez": 2},//tag:weight
-            //metadata - optional, arr.length === days, arr[i].length <= meals.length
-            // in future: on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
-            // on tuesday, meal 3 (dinner) must use tags: taco and meal 4 (snack) is ID
-            // NOT TO BE IMPLEMENTED: on sunday dinner is a roast. In future, impl ability to select from users favourited recipes
-            metadata: [],//[[],[null, null, {"tag": "taco"}, {"meal": "64c705243"}],[],[],[],[],[null, null, {"tag": "roast", fav:true}]],
+    async createPlan(neo: Session, payload: { [p: string]: unknown }, data: MealplanInput): Promise<string> {
+        // const data: MealplanInput = {
+        //     days: 7,
+        //     meals: ["br", "lu", "di", "sn"],
+        //     restrictedAlergies: ["celary", "mustard", "gluten"],
+        //     vegan: false,
+        //     vegetarian: false,
+        //     cost: "£££",
+        //     // @ts-ignore
+        //     tags: {"bulkinsertstresstest": 1}, //{"customisable": 10, "toasty":1, "tofu": 2, "wrap": 1, "healthy": 2, "sandwich": 2, "chez": 2},//tag:weight
+        //     //metadata - optional, arr.length === days, arr[i].length <= meals.length
+        //     // in future: on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
+        //     // on tuesday, meal 3 (dinner) must use tags: taco and meal 4 (snack) is ID
+        //     // NOT TO BE IMPLEMENTED: on sunday dinner is a roast. In future, impl ability to select from users favourited recipes
+        //     metadata: [],//[[],[null, null, {"tag": "taco"}, {"meal": "64c705243"}],[],[],[],[],[null, null, {"tag": "roast", fav:true}]],
+        //
+        // }
 
-        }
+        data.metadata = [[],[null, null, {"tag": "im-a-tag"}, {"meal": "64c705243"}],[],[],[],[],[null, null, {"tag": "roast", fav:true}]];
+
+        if(data.days < 1 || data.days > 7) throw new GenericError("Days must be between 1 and 7");
+        if(data.meals.length < 1 || data.meals.length > 5) throw new GenericError("Days must contain between 1 and 5 meals");
 
         const module = new TheAlgorithm(neo, data);
         const mealplan = await module.getPlan();
@@ -112,7 +116,6 @@ export class MealPlanService {
             let saveCreateQuery = " CREATE (pl:MealPlan {stamp: $stamp, id: $plId, uid:$uid}) ";
             const params: { [key: string]: unknown } = {stamp: new Date().getTime(), plId: ID, uid: payload!.sub}
 
-            //O(n^2) TODO: limit meals to 5/day 7 days. MAX: 35 iterations
             //take in nested array of IDs, merge recipe x with plan pl, has day and meal number stored
             for (let day = 0; day < mealplan.length; day++) {
                 for (let meal = 0; meal < mealplan[day].length; meal++) {

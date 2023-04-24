@@ -15,7 +15,7 @@ export class MealPlan {
 }
 
 @ObjectType({description: 'The Plan layout Model'})
-export class PlanLayout{
+export class PlanLayout {
     @Field(() => [[Recipe]])
     data!: Recipe[][]
 }

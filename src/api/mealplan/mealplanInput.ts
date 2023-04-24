@@ -13,7 +13,22 @@
 // metadata: [[{"timemax": 10}],[null, null, null, {"tag": "taco"}, {"meal": "0c528a"}],[],[],[],[],[null, null, null, null, {"tag": "roast", fav:true}]],
 
 import {Field, ID, InputType} from "type-graphql";
-import {Tags} from "./json.graphql"
+import {GraphQLScalarType} from 'graphql';
+
+
+const Tags = new GraphQLScalarType({
+    name: 'Tags',
+
+    description: 'JSON object of tags',
+    serialize(value) {
+        return JSON.stringify(value);
+    },
+
+    parseValue(value) {
+        return JSON.parse(value);
+    },
+
+});
 
 @InputType()
 export class MealplanInput {
@@ -37,8 +52,8 @@ export class MealplanInput {
 
     //https://www.apollographql.com/docs/apollo-server/schema/custom-scalars/
 
-    // @Field(() => Object)
-    tags!: { [key: string]: number }
+    @Field(() => String)
+    tags!: string //{ [key: string]: number }
     //{ "im-a-tag": 10, "test2": 5, "test3": 2, "boop": 1 }
 
 //metadata - optional, arr.length === days, arr[i].length <= meals.length

@@ -4,6 +4,7 @@ import {Session} from "neo4j-driver";
 
 export class TheAlgorithm {
     tags: string[];
+    tagWeight: {[key:string]:number};
     data: MealplanInput;
     neo: Session;
 
@@ -13,7 +14,8 @@ export class TheAlgorithm {
 
         this.neo = neo;
         this.data = data;
-        this.tags = Object.keys(data.tags);
+        this.tagWeight = JSON.parse(data.tags);
+        this.tags = Object.keys(this.tagWeight);
     }
 
     //parses the data to a matrix plan
@@ -200,7 +202,7 @@ export class TheAlgorithm {
             if (weight > 0) {
                 for (let i = 0; i < node.tags.length; i++)
                     if (this.tags.includes(node.tags[i]))
-                        weight *= this.data.tags[node.tags[i]]
+                        weight *= this.tagWeight[node.tags[i]]
             } else zeroWeightFlag = true;
 
             //create matrix with data entries for TOPSIS.

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+</head>
+<body>
+<button onclick="location.href='./overview.html'">home</button>
+<div id="list">list of ingredients</div>
+</body>
+</html>
+
+<script>
+    const param = new URLSearchParams(window.location.search);
+    const paramID = param.entries().next().value[1];
+    fetch("http://localhost:3004/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({query: `{getRecipe(data:{id:"${paramID}"}){link, ingredients{name, qty}}}`}),
+    })
+        .then(r => r.json())
+        .then(data => {
+            // const d = data.data.getRecipe.data;
+            const r = data.data.getRecipe;
+            const d = r.ingredients;
+            console.log(d);
+            $('#list').append(`<button onclick="location.href='${r.link}'">Open recipe</button>`)
+
+            for (let i = 0; i < d.length; i++)
+                $('#list').append(`<div style="width: 250px; height: 40px; border-bottom: 1px solid black">${d[i].qty} x ${d[i].name}</div>`)
+        });
+</script>
