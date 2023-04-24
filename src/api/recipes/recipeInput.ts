@@ -53,13 +53,13 @@ export class RecipeInput implements Partial<Recipe> {
     serves!: number;
 
     @Field(()=>Boolean)
-    vegan!: boolean;
+    vegan?: boolean;
 
     @Field(()=>Boolean)
-    vegetarian!: boolean;
+    vegetarian?: boolean;
 
     @Field(()=>[IngredientInput])
-    ingredients!: [IngredientInput];
+    ingredients!: IngredientInput[];
 }
 
 @InputType()

@@ -186,13 +186,8 @@ export class MealPlanService {
             listMatchQuery += `(pl: MealPlan {id: $plId}) `
 
             const listResult = await neo.run(
-                listMatchQuery + listCreateQuery.slice(0, -1) + " RETURN l", listParams
+                listMatchQuery + listCreateQuery.slice(0, -1), listParams
             )
-
-            // console.log(listResult)
-
-            //TODO something here
-            //TODO return flag
 
             return ID;
         } catch (e) {

@@ -74,12 +74,12 @@ export class TheAlgorithm {
         const snPlan = await genList("snack");
         t[4] = new Date().getTime();
 
-        console.log({
-            'br': t[1]-t[0],
-            'lu': t[2]-t[1],
-            'di': t[3]-t[2],
-            'sn': t[4]-t[3],
-        });
+        // console.log({
+        //     'br': t[1]-t[0],
+        //     'lu': t[2]-t[1],
+        //     'di': t[3]-t[2],
+        //     'sn': t[4]-t[3],
+        // });
 
         //add a meal to each day of the plan
         const addMeal = async (plan: string[], m: number) => {
@@ -233,10 +233,6 @@ export class TheAlgorithm {
             for (let i = 0; i < normalized.length; i++)
                 normalized[i][j] /= div;
         }
-
-        // console.log(normalized);
-
-        //calculate weight: no
 
         //calculate best/worst (min/max) over each attribute
         const best = [];

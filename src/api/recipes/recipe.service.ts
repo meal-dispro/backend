@@ -129,9 +129,12 @@ export class RecipeService {
             throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
         if (recipeInput.vegan)
             recipeInput.vegetarian = true;
-        // @ts-ignore
         if (recipeInput.ingredients.length === 0)
             throw new GenericError("Meal must contain ingredients")
+        if (recipeInput.vegetarian === undefined)
+            recipeInput.vegetarian = false;
+        if (recipeInput.vegan === undefined)
+            recipeInput.vegan = false;
 
 
         /**
@@ -174,7 +177,7 @@ export class RecipeService {
             }
 
             const result = await neo.run(
-                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) ${mergeIngredients} RETURN r${ins}`,
+                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, icon: $icon, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) ${mergeIngredients} RETURN r${ins}`,
                 params
             )
 

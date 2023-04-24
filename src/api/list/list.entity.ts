@@ -1,5 +1,6 @@
 import {ObjectType, Field, ID} from 'type-graphql';
 import {Ingredient} from "../recipes/recipe.entity";
+import "reflect-metadata";
 
 @ObjectType({description: 'The Shopping List Model'})
 export class List{
@@ -7,7 +8,7 @@ export class List{
     id!: string
 
     @Field(() => [ListItem])
-    items!: [ListItem]
+    items!: ListItem[]
 }
 
 @ObjectType({description: 'The Shopping List Item Model'})

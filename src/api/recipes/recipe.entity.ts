@@ -1,4 +1,5 @@
 import {ObjectType, Field, ID} from 'type-graphql';
+import "reflect-metadata";
 
 @ObjectType({description: 'The Recipe Model'})
 export class Recipe {
@@ -42,7 +43,7 @@ export class Recipe {
     tags!: string[];
 
     @Field(() => [Ingredient])
-    ingredients!: [Ingredient]
+    ingredients!: Ingredient[]
 }
 
 @ObjectType({description: 'The Ingredient Model'})

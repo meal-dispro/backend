@@ -1,6 +1,6 @@
 import {ObjectType, Field, ID} from 'type-graphql';
 import {Recipe} from "../recipes/recipe.entity";
-import {List} from "../list/list.entity";
+import "reflect-metadata";
 
 @ObjectType({description: 'The MealPlan Model'})
 export class MealPlan {
