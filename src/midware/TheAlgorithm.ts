@@ -164,7 +164,9 @@ export class TheAlgorithm {
         }
 
         //calculate weights and order
-        queryString += `WITH size(apoc.coll.intersection(n.tags, $tags)) as weight, n ORDER BY weight DESC `
+        const APOC = `apoc.coll.intersection(n.tags, $tags)`;
+        const WHERE = `[x IN n.tags WHERE x IN $tags | x]`;
+        queryString += `WITH size(${WHERE}) as weight, n ORDER BY weight DESC `;
 
         //limit order and return
         queryString += `LIMIT ${limit} RETURN { properties: properties(n), weight: weight }`

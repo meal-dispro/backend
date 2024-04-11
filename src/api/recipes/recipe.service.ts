@@ -34,7 +34,7 @@ export class RecipeService {
             return nodes;
         } catch (e) {
             logger.error(e);
-            throw new GenericError("An error occurred while deleting recipe.");
+            throw new GenericError("An error occurred while fetching recipe.");
         } finally {
             await neo.close()
         }
@@ -88,7 +88,7 @@ export class RecipeService {
 
     async bulkCreateRecipe(neo: Session) {
         const s = "bulkinsertstresstest";
-        const total = 100000;
+        const total = 15;
         for(let i = 0; i < total; i++) {
             if(i % (total/10) === 0) console.log(`${i/total*100}%`)
 
@@ -102,7 +102,7 @@ export class RecipeService {
                 tags: [s],
                 title: s+i,
                 link: s,
-                icon: s,
+                icon: 'https://images.immediate.co.uk/production/volatile/sites/30/2023/06/Ultraprocessed-food-58d54c3.jpg',
                 type: 'lunch',
                 vegan: true,
                 vegetarian: true,
@@ -116,7 +116,7 @@ export class RecipeService {
             }
 
             const result = await neo.run(
-                `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) MERGE (in:Ingredient {name: $ingName}) MERGE (r)-[ri:uses {qty: $qty}]->(in) RETURN r`,
+                `CREATE (r:Recipe {id: $id, icon: $icon, tags: $tags, title: $title, type: $type, link: $link, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) MERGE (in:Ingredient {name: $ingName}) MERGE (r)-[ri:uses {qty: $qty}]->(in) RETURN r`,
                 c
             )
         }
@@ -125,6 +125,8 @@ export class RecipeService {
 
 
     async createRecipe(neo: Session, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
+        // await this.bulkCreateRecipe(neo);
+
         if (!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
             throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
         if (recipeInput.vegan)

@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import Express from 'express';
-import 'reflect-metadata';
+//import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
 import dotenv from 'dotenv';
 
@@ -37,7 +37,7 @@ const main = async () => {
         emitSchemaFile: true,
         validate: false,
     });
-    const driver: Driver = neo4j.driver("bolt://localhost:7689", neo4j.auth.basic("neo4j", "password"))
+    const driver: Driver = neo4j.driver(process.env.BOLT_HOST, neo4j.auth.basic(process.env.NEO_NAME, process.env.NEO_PASS))//, {encrypted:"ENCRYPTION_OFF",})
 
     function _createContext (req: any): Context {
         const tmp = createContext(req);
