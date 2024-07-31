@@ -16,7 +16,7 @@ import {MealplanInput} from "./mealplanInput";
 @Service()
 @Resolver((_of) => MealPlan)
 export class MealplanResolver {
-    private readonly mealPlanService: MealPlanService
+    private readonly mealPlanService: MealPlanService;
 
     constructor() {
         this.mealPlanService = new MealPlanService();
@@ -25,21 +25,21 @@ export class MealplanResolver {
     @Mutation(() => String)
     @UseMiddleware(isAuth, neoSess)
     async createMealPlan(@Ctx() { payload, neo }: Context, @Arg('data', ()=>MealplanInput) mealplanInput: MealplanInput): Promise<string>{
-        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
+        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b1")
         return await this.mealPlanService.createPlan(neo, payload, mealplanInput);
     }
 
     @Query(() => [MealPlan])
     @UseMiddleware(isAuth, neoSess)
     async getUserMealPlans(@Ctx() { payload, neo }: Context): Promise<MealPlan[]>{
-        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
+        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b2")
         return await this.mealPlanService.getMealPlansUser(neo, payload);
     }
 
     @Query(() => PlanLayout)
     @UseMiddleware(isAuth, neoSess)
     async getSinglePlanMeals(@Ctx() { payload, neo }: Context, @Arg('id', ()=>String) id: string): Promise<PlanLayout>{
-        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b")
+        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3b3")
         return await this.mealPlanService.getMealPlanRecipes(neo, payload, id);
     }
 

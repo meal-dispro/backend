@@ -12,7 +12,9 @@
     <button onclick="location.href='./overview.html'">home</button>
 
 </div>
-<div id="list"><div style="width: 250px; height: 40px; border-bottom: 1px solid black">list of ingredients</div></div>
+<div id="desc"><p><b>Click "open recipe" to view recipe</b></p></div>
+<br>
+<div id="list"><div style="width: 250px; height: 40px; border-bottom: 1px solid black"><b>list of ingredients</b></div></div>
 </body>
 </html>
 
@@ -25,7 +27,7 @@
             "Content-Type": "application/json",
             Accept: "application/json",
         },
-        body: JSON.stringify({query: `{getRecipe(data:{id:"${paramID}"}){link, ingredients{name, qty}}}`}),
+        body: JSON.stringify({query: `{getRecipe(data:{id:"${paramID}"}){link, description, ingredients{name, qty}}}`}),
     })
         .then(r => r.json())
         .then(data => {
@@ -34,6 +36,7 @@
             const d = r.ingredients;
             console.log(d);
             $('#btn').append(`<button onclick="location.href='${r.link}'">Open recipe</button>`)
+            $('#desc').append(`<p>${r.description}</p>`)
 
             for (let i = 0; i < d.length; i++)
                 $('#list').append(`<div style="width: 250px; height: 40px; border-bottom: 1px solid black">${d[i].qty} x ${d[i].name}</div>`)

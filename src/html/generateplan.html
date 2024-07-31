@@ -83,6 +83,9 @@
         })
             .then(r => r.json())
             .then(data => {
+                console.log(data)
+                if(data.errors)
+                    return alert(data.errors[0].message);
                 // const d = data.data.getRecipe.data;
                 const id = data.data.createMealPlan;
                 console.log(id);

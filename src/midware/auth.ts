@@ -14,7 +14,7 @@ const logger = require('pino')()
 // const { ApolloServer, gql, AuthenticationError } = require('apollo-server');
 
 export const isAuth: MiddlewareFn<Context> = ({ context }, next) => {
-    context.payload = {sub: 17};
+    context.payload = {sub: "5E389C6A"};
     return next();
 
     //TODO: this

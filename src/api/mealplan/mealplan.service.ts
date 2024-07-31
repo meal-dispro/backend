@@ -8,10 +8,15 @@ import {Recipe} from "../recipes/recipe.entity";
 
 const logger = require('pino')()
 
+/**TODO IF A RECIPE IS DELETED AND meal:ID is set in metadata, the whole thing fails with no error and is a nightmare to debug
+ */
+
+
 @Service()
 export class MealPlanService {
 
-    async getMealPlanRecipes(neo: Session, payload: { [p: string]: unknown }, id: string): Promise<PlanLayout> {
+    async getMealPlanRecipes(neo: Session, payload: { [p: string]: unknown },
+                             id: string): Promise<PlanLayout> {
         const s = 'MATCH (pl: MealPlan {id:$id})-[h:has]->(r:Recipe) RETURN pl,h,r';
         try {
 
@@ -53,7 +58,8 @@ export class MealPlanService {
 
     }
 
-    async getMealPlansUser(neo: Session, payload: { [p: string]: unknown }): Promise<MealPlan[]> {
+    async getMealPlansUser(neo: Session, payload: { [p: string]: unknown })
+        : Promise<MealPlan[]> {
         const s = 'MATCH (r:MealPlan {uid:$uid}) RETURN r ORDER BY r.stamp DESC LIMIT 20';
         try {
 
@@ -76,7 +82,8 @@ export class MealPlanService {
         }
     }
 
-    async createPlan(neo: Session, payload: { [p: string]: unknown }, data: MealplanInput): Promise<string> {
+    async createPlan(neo: Session, payload: { [p: string]: unknown },
+                     data: MealplanInput): Promise<string> {
         // const data: MealplanInput = {
         //     days: 7,
         //     meals: ["br", "lu", "di", "sn"],
@@ -85,7 +92,10 @@ export class MealPlanService {
         //     vegetarian: false,
         //     cost: "£££",
         //     // @ts-ignore
-        //     tags: {"bulkinsertstresstest": 1}, //{"customisable": 10, "toasty":1, "tofu": 2, "wrap": 1, "healthy": 2, "sandwich": 2, "chez": 2},//tag:weight
+        //     tags: {"bulkinsertstresstest": 1},
+        // {"customisable": 10, "toasty":1, "tofu": 2, "wrap": 1, "healthy": 2, "sandwich": 2, "chez": 2},
+        // tag:weight
+        //
         //     //metadata - optional, arr.length === days, arr[i].length <= meals.length
         //     // in future: on monday meal 0 (br) has the constraint of being no more than 10 mins. It doesnt have null padding
         //     // on tuesday, meal 3 (dinner) must use tags: taco and meal 4 (snack) is ID
@@ -94,21 +104,22 @@ export class MealPlanService {
         //
         // }
 
-        data.metadata = [[],[null, null, {"tag": "im-a-tag"}, {"meal": "64c705243"}],[],[],[],[],[null, null, {"tag": "roast", fav:true}]];
+        console.log("It is doing something dont worry")
+
+        // data.metadata = [[],[null, null, {"tag": "im-a-tag"}, {"meal": "64c705243"}],[],[],[],[],[null, null, {"tag": "roast", fav:true}]];
+        data.metadata = [[],[null, null, {"tag": "im-a-tag"}, null],[],[],[],[],[]];
 
         if(data.days < 1 || data.days > 7) throw new GenericError("Days must be between 1 and 7");
         if(data.meals.length < 1 || data.meals.length > 5) throw new GenericError("Days must contain between 1 and 5 meals");
 
         const module = new TheAlgorithm(neo, data);
         const mealplan = await module.getPlan();
-        console.log(mealplan)
 
         try {
             const ID = (() => {
                 let n = (Math.random() * 0xfffff * 1000000).toString(16);
                 return n.slice(0, 9);
             })();
-            console.log(ID)
 
             //building the meal plan query.
             let saveMatchQuery = "MATCH "
@@ -131,7 +142,7 @@ export class MealPlanService {
             }
 
             //then return all ingredients for processing
-            const query = saveMatchQuery.slice(0, -1) + saveCreateQuery + " WITH pl MATCH (pl)-[:has]->(:Recipe)-[u:uses]->(i:Ingredient) return u,i";
+            const query = saveMatchQuery.slice(0, -1) + saveCreateQuery + " WITH pl MATCH (pl)-[:has]->(:Recipe)-[u:uses]->(i:Ingredient) RETURN u,i;";
 
             /** example
              MATCH (r1:Recipe {id:"44f7a4149"}),
@@ -168,8 +179,6 @@ export class MealPlanService {
                     listData[name] = qty
             }
 
-            // console.log(listData)
-
             const listParams: { [key: string]: unknown } = {plId: ID, uid: payload!.sub}
             //building query as two parts. match the current plan and all ingredients,
             // then create a new list and create a connection from plan to list and list to ingredients
@@ -189,12 +198,14 @@ export class MealPlanService {
             listMatchQuery += `(pl: MealPlan {id: $plId}) `
 
             const listResult = await neo.run(
-                listMatchQuery + listCreateQuery.slice(0, -1), listParams
+                listMatchQuery + listCreateQuery.trim().slice(0, -1), listParams
             )
 
             return ID;
-        } catch (e) {
+        } catch (e: any) {
             logger.error(e);
+            if(e.message.startsWith('[20]'))
+                throw e;
             throw new GenericError("An error occurred while creating a meal plan.");
         } finally {
             await neo.close()

@@ -3,6 +3,7 @@ import {Session} from "neo4j-driver";
 import {Recipe} from "./recipe.entity";
 import {GenericError} from "../../midware/GenericError";
 import {RecipeInput} from "./recipeInput";
+import {Connection} from "mysql";
 
 const logger = require('pino')()
 
@@ -86,7 +87,7 @@ export class RecipeService {
         }
     }
 
-    async bulkCreateRecipe(neo: Session) {
+    async bulkCreateRecipe(neo: Session, type: string) {
         const s = "bulkinsertstresstest";
         const total = 15;
         for(let i = 0; i < total; i++) {
@@ -97,13 +98,15 @@ export class RecipeService {
                 return n.slice(0, 9);
             })();
 
+            // const type:string  = "dinner";
+
             const c = {
                 id: ID,
-                tags: [s],
+                tags: [type, 'im-not-a-tag'],
                 title: s+i,
                 link: s,
                 icon: 'https://images.immediate.co.uk/production/volatile/sites/30/2023/06/Ultraprocessed-food-58d54c3.jpg',
-                type: 'lunch',
+                type: type,
                 vegan: true,
                 vegetarian: true,
                 description: s,
@@ -124,8 +127,11 @@ export class RecipeService {
     }
 
 
-    async createRecipe(neo: Session, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
-        // await this.bulkCreateRecipe(neo);
+    async createRecipe(neo: Session, mywrite: Connection, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
+        // await this.bulkCreateRecipe(neo, "breakfast");
+        // await this.bulkCreateRecipe(neo, "lunnch");
+        // await this.bulkCreateRecipe(neo, "dinner");
+        // await this.bulkCreateRecipe(neo, "snack");
 
         if (!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
             throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
@@ -150,7 +156,7 @@ export class RecipeService {
         try {
             const ID = (() => {
                 let n = (Math.random() * 0xfffff * 1000000).toString(16);
-                return n.slice(0, 9);
+                return n.slice(0, 8);
             })();
 
             let mergeIngredients = '';
@@ -182,6 +188,26 @@ export class RecipeService {
                 `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, icon: $icon, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) ${mergeIngredients} RETURN r${ins}`,
                 params
             )
+
+            //TODO: insert post
+            // =content=
+            // description
+            // ingredients
+            // instructions
+            // | user_id  | title | content | sec  | post_type |
+            const userID = payload.sub;
+            const timestamp = new Date();
+            const title = recipeInput.title;
+            const body = "TODO FIGURE THIS OUT";
+            const sec = "recipe";
+
+            console.log(1)
+            const sqlquery = "INSERT INTO posts(post_id, user_id, timestamp, edited, title, content, deleted, pinned, sec, post_type) VALUES(?,?,?,?,?,?,?,?,?,?);";
+            const sqlparams = [ID, userID, timestamp, false, title, body, false, false, sec, 1];
+
+            mywrite.query(sqlquery, sqlparams);
+            console.log(2)
+
 
             const singleRecord = result.records[0]
             const node = singleRecord.get(0).properties;
