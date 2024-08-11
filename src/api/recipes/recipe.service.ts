@@ -90,8 +90,8 @@ export class RecipeService {
     async bulkCreateRecipe(neo: Session, type: string) {
         const s = "bulkinsertstresstest";
         const total = 15;
-        for(let i = 0; i < total; i++) {
-            if(i % (total/10) === 0) console.log(`${i/total*100}%`)
+        for (let i = 0; i < total; i++) {
+            if (i % (total / 10) === 0) console.log(`${i / total * 100}%`)
 
             const ID = (() => {
                 let n = (Math.random() * 0xfffff * 1000000).toString(16);
@@ -103,7 +103,7 @@ export class RecipeService {
             const c = {
                 id: ID,
                 tags: [type, 'im-not-a-tag'],
-                title: s+i,
+                title: s + i,
                 link: s,
                 icon: 'https://images.immediate.co.uk/production/volatile/sites/30/2023/06/Ultraprocessed-food-58d54c3.jpg',
                 type: type,
@@ -128,22 +128,26 @@ export class RecipeService {
 
 
     async createRecipe(neo: Session, mywrite: Connection, payload: { [p: string]: unknown }, recipeInput: RecipeInput): Promise<Recipe> {
-        // await this.bulkCreateRecipe(neo, "breakfast");
-        // await this.bulkCreateRecipe(neo, "lunnch");
-        // await this.bulkCreateRecipe(neo, "dinner");
-        // await this.bulkCreateRecipe(neo, "snack");
-
         if (!["breakfast", "lunch", "dinner", "snack"].includes(recipeInput.type))
             throw new GenericError("Meal type must be one of [\"breakfast\", \"lunch\", \"dinner\", \"snack\"]")
-        if (recipeInput.vegan)
-            recipeInput.vegetarian = true;
+
         if (recipeInput.ingredients.length === 0)
             throw new GenericError("Meal must contain ingredients")
+
+        const ID = (() => {
+            let n = (Math.random() * 0xfffff * 1000000).toString(16);
+            return n.slice(0, 8);
+        })();
+
+        if (recipeInput.vegan)
+            recipeInput.vegetarian = true;
         if (recipeInput.vegetarian === undefined)
             recipeInput.vegetarian = false;
         if (recipeInput.vegan === undefined)
             recipeInput.vegan = false;
 
+        if(!recipeInput.link)
+            recipeInput.link = "/posts?post-id=" + ID;
 
         /**
          CREATE (r:Recipe {title:'new2'})
@@ -154,11 +158,6 @@ export class RecipeService {
          RETURN r,i,i2
          */
         try {
-            const ID = (() => {
-                let n = (Math.random() * 0xfffff * 1000000).toString(16);
-                return n.slice(0, 8);
-            })();
-
             let mergeIngredients = '';
             const params: { [key: string]: unknown } = {
                 id: ID,
@@ -178,8 +177,8 @@ export class RecipeService {
             let ins = '';
 
             for (let i = 0; i < recipeInput.ingredients.length; i++) {
-                ins += `,i${i},ri${i}`
-                mergeIngredients += `MERGE (i${i}:Ingredient {name: $ingName${i}}) MERGE (r)-[ri${i}:uses {qty: $qty${i}}]->(i${i})`
+                ins += `,i${i},ri${i}`;
+                mergeIngredients += `MERGE (i${i}:Ingredient {name: $ingName${i}}) MERGE (r)-[ri${i}:uses {qty: $qty${i}}]->(i${i})`;
                 params['ingName' + i] = recipeInput.ingredients[i].name;
                 params['qty' + i] = recipeInput.ingredients[i].qty;
             }
@@ -187,26 +186,20 @@ export class RecipeService {
             const result = await neo.run(
                 `CREATE (r:Recipe {id: $id, tags: $tags, title: $title, type: $type, link: $link, icon: $icon, description: $description, cooktime: $cooktime, serves: $serves, cost: $cost, vegan: $vegan, vegetarian: $vegetarian, author: $author}) ${mergeIngredients} RETURN r${ins}`,
                 params
-            )
+            );
 
-            //TODO: insert post
-            // =content=
-            // description
-            // ingredients
-            // instructions
-            // | user_id  | title | content | sec  | post_type |
+            //insert forum post
             const userID = payload.sub;
             const timestamp = new Date();
             const title = recipeInput.title;
-            const body = "TODO FIGURE THIS OUT";
-            const sec = "recipe";
+            const body = `${recipeInput.description}\n\n` +
+                (recipeInput.link ? `Check out how to make it at: ${recipeInput.link}` : "TODO: Instructions here");
+            const sec = "recipes";
 
-            console.log(1)
-            const sqlquery = "INSERT INTO posts(post_id, user_id, timestamp, edited, title, content, deleted, pinned, sec, post_type) VALUES(?,?,?,?,?,?,?,?,?,?);";
-            const sqlparams = [ID, userID, timestamp, false, title, body, false, false, sec, 1];
+            const sqlquery = "INSERT INTO posts(post_id, user_id, timestamp, edited, title, content, deleted, pinned, sec, post_type, score, comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);";
+            const sqlparams = [ID, userID, timestamp, false, title, body, false, false, sec, 1, 0, 0];
 
             mywrite.query(sqlquery, sqlparams);
-            console.log(2)
 
 
             const singleRecord = result.records[0]
