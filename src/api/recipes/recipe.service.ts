@@ -146,7 +146,7 @@ export class RecipeService {
         if (recipeInput.vegan === undefined)
             recipeInput.vegan = false;
 
-        if(!recipeInput.link)
+        if (!recipeInput.link)
             recipeInput.link = "/posts?post-id=" + ID;
 
         /**
@@ -178,9 +178,10 @@ export class RecipeService {
 
             for (let i = 0; i < recipeInput.ingredients.length; i++) {
                 ins += `,i${i},ri${i}`;
-                mergeIngredients += `MERGE (i${i}:Ingredient {name: $ingName${i}}) MERGE (r)-[ri${i}:uses {qty: $qty${i}}]->(i${i})`;
+                mergeIngredients += `MERGE (i${i}:Ingredient {name: $ingName${i}}) MERGE (r)-[ri${i}:uses {qty: $qty${i}, qty_typ: $qty_typ${i}}]->(i${i})`;
                 params['ingName' + i] = recipeInput.ingredients[i].name;
                 params['qty' + i] = recipeInput.ingredients[i].qty;
+                params['qty_typ' + i] = recipeInput.ingredients[i].qty_typ;
             }
 
             const result = await neo.run(
@@ -191,9 +192,10 @@ export class RecipeService {
             //insert forum post
             const userID = payload.sub;
             const timestamp = new Date();
-            const title = recipeInput.title;
-            const body = `${recipeInput.description}\n\n` +
-                (recipeInput.link ? `Check out how to make it at: ${recipeInput.link}` : "TODO: Instructions here");
+            const title = `[${recipeInput.type} ${recipeInput.title}`;
+            const body = recipeInput.link ?
+                `Check out how to make it [here](${recipeInput.link})`
+                : "TODO: Instructions here if no link";
             const sec = "recipes";
 
             const sqlquery = "INSERT INTO posts(post_id, user_id, timestamp, edited, title, content, deleted, pinned, sec, post_type, score, comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);";
@@ -202,7 +204,7 @@ export class RecipeService {
             mywrite.query(sqlquery, sqlparams);
 
 
-            const singleRecord = result.records[0]
+            const singleRecord = result.records[0];
             const node = singleRecord.get(0).properties;
             node.ingredients = [];
 

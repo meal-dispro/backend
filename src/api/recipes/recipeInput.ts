@@ -71,4 +71,8 @@ export class IngredientInput {
     @Field(()=>Number)
     @Min(1)
     qty!: number;
+
+    @Field(()=>String)
+    @Length(2, 255)
+    qty_typ!: string;
 }
