@@ -15,7 +15,9 @@ describe('create a recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
         const noVegan = await u.createRecipe(context, {
@@ -29,7 +31,11 @@ describe('create a recipe', () => {
             cost: 1,
             type: "dinner",
             ingredients: [
-                {name: "cauliflour", qty: 1}, {name: "curry paste", qty: 2}, {name: "naan bread", qty: 3},
+                {name: "cauliflour", qty_typ: "gram", qty: 1}, {
+                    name: "curry paste",
+                    qty_typ: "gram",
+                    qty: 2
+                }, {name: "naan bread", qty_typ: "gram", qty: 3},
             ]
         });
 
@@ -49,7 +55,11 @@ describe('create a recipe', () => {
             vegetarian: false,
             author: context.payload.sub,
             serves: 5,
-            ingredients: [{name: "cauliflour", qty: 1}, {name: "curry paste", qty: 2}, {name: "naan bread", qty: 3},]
+            ingredients: [{name: "cauliflour", qty_typ: "gram", qty: 1}, {
+                name: "curry paste",
+                qty_typ: "gram",
+                qty: 2
+            }, {name: "naan bread", qty_typ: "gram", qty: 3},]
         })
     })
 })
@@ -64,7 +74,9 @@ it("to create a recipe with all the specified values", async () => {
         payload: {sub: 17},
         request: {req: {headers: {authorization: ''}}},
         neo: Session,
-        nDrive: driver
+        nDrive: driver,
+        myread: undefined,
+        mywrite: undefined,
     };
 
     const allprops = await u.createRecipe(context, {
@@ -80,7 +92,11 @@ it("to create a recipe with all the specified values", async () => {
         cost: 1,
         type: "dinner",
         ingredients: [
-            {name: "cauliflour", qty: 1}, {name: "curry paste", qty: 2}, {name: "naan bread", qty: 3},
+            {name: "cauliflour", qty_typ: "gram", qty: 1}, {
+                name: "curry paste",
+                qty_typ: "gram",
+                qty: 2
+            }, {name: "naan bread", qty_typ: "gram", qty: 3},
         ]
     });
     expect(allprops).toEqual({
@@ -97,7 +113,11 @@ it("to create a recipe with all the specified values", async () => {
         vegetarian: false,
         author: context.payload.sub,
         serves: 5,
-        ingredients: [{name: "cauliflour", qty: 1}, {name: "curry paste", qty: 2}, {name: "naan bread", qty: 3},]
+        ingredients: [{name: "cauliflour", qty_typ: "gram", qty: 1}, {
+            name: "curry paste",
+            qty_typ: "gram",
+            qty: 2
+        }, {name: "naan bread", qty_typ: "gram", qty: 3},]
     })
 })
 
@@ -112,7 +132,9 @@ describe('create a recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
         const noVegetarian = await u.createRecipe(context, {
@@ -127,7 +149,11 @@ describe('create a recipe', () => {
             cost: 1,
             type: "dinner",
             ingredients: [
-                {name: "cauliflour", qty: 1}, {name: "curry paste", qty: 2}, {name: "naan bread", qty: 3},
+                {name: "cauliflour", qty_typ: "gram", qty: 1}, {
+                    name: "curry paste",
+                    qty_typ: "gram",
+                    qty: 2
+                }, {name: "naan bread", qty_typ: "gram", qty: 3},
             ]
         });
 
@@ -145,7 +171,11 @@ describe('create a recipe', () => {
             vegetarian: true,
             author: context.payload.sub,
             serves: 5,
-            ingredients: [{name: "cauliflour", qty: 1}, {name: "curry paste", qty: 2}, {name: "naan bread", qty: 3},]
+            ingredients: [{name: "cauliflour", qty_typ: "gram", qty: 1}, {
+                name: "curry paste",
+                qty_typ: "gram",
+                qty: 2
+            }, {name: "naan bread", qty_typ: "gram", qty: 3},]
         })
     })
 })
@@ -161,10 +191,12 @@ describe('create a recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
-        try{
+        try {
             await u.createRecipe(context, {
                 serves: 5,
                 title: "testing",
@@ -179,7 +211,7 @@ describe('create a recipe', () => {
                 ingredients: []
             })
             expect(false).toBe(true);
-        }catch (e){
+        } catch (e) {
             expect(true).toBe(true);
         }
     })
@@ -198,7 +230,9 @@ describe('get a recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
         const out = (await u.getRecipe(context, {
@@ -220,7 +254,9 @@ describe('get a recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
         try {
@@ -250,7 +286,9 @@ describe('remove recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
         const out = (await u.deleteRecipe(context, {
@@ -273,7 +311,9 @@ describe('remove recipe', () => {
             payload: {sub: 17},
             request: {req: {headers: {authorization: ''}}},
             neo: Session,
-            nDrive: driver
+            nDrive: driver,
+            myread: undefined,
+            mywrite: undefined,
         };
 
         const out = (await u.deleteRecipe(context, {

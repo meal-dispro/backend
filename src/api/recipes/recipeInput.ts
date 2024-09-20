@@ -5,7 +5,7 @@ import {Recipe} from "./recipe.entity";
 @InputType()
 export class RecipeById implements Partial<Recipe> {
     @Field(() => ID)
-    @Length(9,9)
+    @Length(8,9)
     id!: string;
 }
 

@@ -74,7 +74,8 @@ export class RecipeService {
             for (let i = 0; i < result.records.length; i++) {
                 node.ingredients.push({
                     name: result.records[i].get(1).properties.name,
-                    qty: result.records[i].get(2).properties.qty
+                    qty: result.records[i].get(2).properties.qty,
+                    qty_typ: result.records[i].get(2).properties.qty_typ
                 });
             }
 
@@ -192,7 +193,7 @@ export class RecipeService {
             //insert forum post
             const userID = payload.sub;
             const timestamp = new Date();
-            const title = `[${recipeInput.type} ${recipeInput.title}`;
+            const title = `[${recipeInput.type}] ${recipeInput.title}`;
             const body = recipeInput.link ?
                 `Check out how to make it [here](${recipeInput.link})`
                 : "TODO: Instructions here if no link";
@@ -211,7 +212,8 @@ export class RecipeService {
             for (let i = 1; i <= recipeInput.ingredients.length * 2; i += 2) {
                 node.ingredients.push({
                     name: singleRecord.get(i).properties.name,
-                    qty: singleRecord.get(i + 1).properties.qty
+                    qty: singleRecord.get(i + 1).properties.qty,
+                    qty_typ: singleRecord.get(i + 1).properties.qty_typ
                 });
             }
 

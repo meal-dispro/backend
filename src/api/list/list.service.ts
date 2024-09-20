@@ -27,7 +27,7 @@ export class ListService {
             for(let i = 0; i < data.length; i++){
                 const rel = data[i].get(1).properties;
                 const itm = data[i].get(2).properties;
-                out.items.push({item: {qty: rel.qty, name: itm.name}, checked: rel.checked});
+                out.items.push({item: {qty_typ: rel.qty_typ, qty: rel.qty, name: itm.name}, checked: rel.checked});
             }
             return out;
         } catch (e) {

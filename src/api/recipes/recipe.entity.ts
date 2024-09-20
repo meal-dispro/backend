@@ -51,6 +51,9 @@ export class Ingredient{
     @Field(() => String)
     name!: string;
 
+    @Field(() => String)
+    qty_typ!: string;
+
     @Field(() => Number)
     qty!: number;
 }

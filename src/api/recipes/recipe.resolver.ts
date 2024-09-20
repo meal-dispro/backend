@@ -45,9 +45,10 @@ export class RecipeResolver {
     }
 
     @Query(() => Recipe)
-    @UseMiddleware(isAuth, neoSess)
-    async getRecipe(@Ctx() { payload, neo }: Context, @Arg('data', ()=>RecipeById) recipeInput: RecipeById): Promise<Recipe> {
-        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3a4")
+    @UseMiddleware(isAuth)
+    async getRecipe(@Ctx() { payload, nDrive }: Context, @Arg('data', ()=>RecipeById) recipeInput: RecipeById): Promise<Recipe> {
+        const neo = nDrive?.session();
+        if(!neo || !payload) throw new GenericError("An internal error occurred 0x3c3a4");
         return await this.recipeService.getRecipe(neo, payload, recipeInput.id);
     }
 }
